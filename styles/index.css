@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-headline: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-surface-container-high: #dce9ff;
+  --color-tertiary-fixed-dim: #ffb690;
+  --color-on-surface: #0b1c30;
+  --color-on-tertiary: #ffffff;
+  --color-primary-fixed-dim: #bcc7de;
+  --color-surface: #f8f9ff;
+  --color-surface-container-highest: #d3e4fe;
+  --color-tertiary-container: #341100;
+  --color-on-error: #ffffff;
+  --color-secondary-fixed-dim: #4edea3;
+  --color-secondary-fixed: #6ffbbe;
+  --color-background: #f8f9ff;
+  --color-secondary-container: #6cf8bb;
+  --color-tertiary: #000000;
+  --color-on-secondary-fixed: #002113;
+  --color-on-background: #0b1c30;
+  --color-on-tertiary-fixed-variant: #783200;
+  --color-secondary: #006c49;
+  --color-on-error-container: #93000a;
+  --color-error-container: #ffdad6;
+  --color-inverse-on-surface: #eaf1ff;
+  --color-error: #ba1a1a;
+  --color-on-primary-fixed: #111c2d;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-primary: #ffffff;
+  --color-on-tertiary-container: #d95f00;
+  --color-on-primary-fixed-variant: #3c475a;
+  --color-tertiary-fixed: #ffdbca;
+  --color-on-surface-variant: #45464d;
+  --color-surface-dim: #cbdbf5;
+  --color-surface-bright: #f8f9ff;
+  --color-surface-container: #e5eeff;
+  --color-on-primary-container: #79849a;
+  --color-on-secondary-container: #00714d;
+  --color-primary-container: #111c2d;
+  --color-surface-tint: #545f73;
+  --color-inverse-primary: #bcc7de;
+  --color-inverse-surface: #213145;
+  --color-on-tertiary-fixed: #341100;
+  --color-surface-variant: #d3e4fe;
+  --color-surface-container-low: #eff4ff;
+  --color-on-secondary-fixed-variant: #005236;
+  --color-primary: #000000;
+  --color-on-secondary: #ffffff;
+  --color-primary-fixed: #d8e3fb;
+  --color-outline-variant: #c6c6cd;
+  --color-outline: #76777d;
+
+  --radius-DEFAULT: 0.125rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+}
+
+@layer base {
+  button, select, [role="button"] {
+    @apply cursor-pointer;
+  }
+  body {
+    @apply bg-background text-on-background font-body;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Fix Leaflet subpixel tile grid lines & background bleed */
+.leaflet-container {
+  background-color: #f2efe9 !important;
+}
+
+.leaflet-tile {
+  outline: 1px solid transparent;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.leaflet-tile-container img {
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+
+

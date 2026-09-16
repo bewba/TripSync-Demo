@@ -1,0 +1,5 @@
+{
+  "name": "FleetNavigator",
+  "description": "A high-end editorial logistics and fleet management dashboard for planning trips, adding trucks, and viewing trip history.",
+  "requestFramePermissions": []
+}
