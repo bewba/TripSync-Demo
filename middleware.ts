@@ -4,8 +4,8 @@ import type { NextRequest } from "next/server";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // For demo mode: automatically redirect root, login, or signup directly to the active drivers demo dashboard
-  if (pathname === "/" || pathname === "/login" || pathname === "/signup") {
+  // For demo mode: automatically redirect login or signup directly to the active drivers demo dashboard
+  if (pathname === "/login" || pathname === "/signup") {
     return NextResponse.redirect(new URL("/auth/active-drivers", req.url));
   }
 
