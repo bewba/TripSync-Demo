@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'motion/react';
 import { StepHeader } from '@/components/auth/plan-trip/Header';
 import { Hero } from '@/components/auth/plan-trip/Hero';
@@ -12,6 +13,7 @@ import FuelRequirementStep from '@/components/auth/plan-trip/FuelRequirementStep
 import TripPreview from '@/components/auth/plan-trip/TripPreview';
 
 export default function PlanTripPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false); // Added loading state
   const { showToast, ToastComponent } = useToast();
@@ -40,9 +42,15 @@ export default function PlanTripPage() {
       console.log(result)
 
       if (response.ok) {
-        setFormData({});
-        setCurrentStep(1);
-        showToast("Trip saved successfully!", "success");
+        showToast("Trip dispatched successfully! Redirecting to live tracking...", "success");
+        const dispatchedTripId = result.data?.id;
+        setTimeout(() => {
+          if (dispatchedTripId) {
+            router.push(`/auth/active-drivers?tripId=${dispatchedTripId}`);
+          } else {
+            router.push('/auth/active-drivers');
+          }
+        }, 800);
       } else {
         showToast(result.message || "Failed to save trip", "error");
       }

@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { MapPin, Loader2, ChevronDown, Search, Check, Map as MapIcon, List } from 'lucide-react';
+import { MapPin, Loader2, ChevronDown, Search, Check, Map as MapIcon, List, Lock } from 'lucide-react';
 
 const MapPicker = dynamic(() => import('@/components/ui/MapPicker/MapPicker'), {
   ssr: false,
@@ -29,7 +29,7 @@ interface SavedLocation {
 export const LocationInput = ({ type, placeholder, value, lat, lng, onChange, onLoadingChange, isLast = false }: LocationInputProps) => {
   const [inputValue, setInputValue] = useState(value);
   const [isOpen, setIsOpen] = useState(false);
-  const [showMap, setShowMap] = useState(false);
+  const [showMap, setShowMap] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [locations, setLocations] = useState<SavedLocation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,54 +45,33 @@ export const LocationInput = ({ type, placeholder, value, lat, lng, onChange, on
   const fetchLocations = async (query: string = '') => {
     try {
       setIsLoading(true);
-      // We can use the existing get-locations but we'll filter client-side or add a query param if needed
-      // For now, let's just fetch all and filter for the dropdown
       const res = await fetch(`/api/auth/locations/get-locations`);
+      if (!res.ok) {
+        setLocations([]);
+        return;
+      }
       const data = await res.json();
       
-      let filtered = data || [];
+      let filtered = Array.isArray(data) ? data : [];
       if (query) {
-        filtered = filtered.filter((l: any) => l.name.toLowerCase().includes(query.toLowerCase()));
+        filtered = filtered.filter((l: any) => l.name?.toLowerCase().includes(query.toLowerCase()));
       }
-      setLocations(filtered.slice(0, 5));
+      setLocations(filtered);
     } catch (err) {
       console.error("Failed to fetch locations", err);
+      setLocations([]);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !showMap) {
       fetchLocations(searchQuery);
     }
-  }, [isOpen, searchQuery]);
+  }, [isOpen, showMap, searchQuery]);
 
-  // SEARCH LOGIC (Geocoding - only active when showMap is true)
-  useEffect(() => {
-    if (!showMap || !searchQuery || searchQuery.length < 3) return;
-
-    const timer = setTimeout(async () => {
-      setIsLoading(true);
-      try {
-        const res = await fetch(`/api/auth/geocode?q=${encodeURIComponent(searchQuery)}`);
-        const data = await res.json();
-        if (data && data.length > 0) {
-          const first = data[0];
-          const lat = Number(first.lat);
-          const lng = Number(first.lon);
-          latestData.current = { lat, lng, lastFetchedAddress: first.formatted };
-          onChange(first.formatted, lat, lng);
-        }
-      } catch (err) {
-        console.error("Geocoding failed", err);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery, showMap, onChange]);
+  // Geocoding search by text is disabled in demo; map selection is handled via pin drop (handleMapChange)
 
   // Sync internal display when parent state changes
   useEffect(() => {
@@ -104,12 +83,13 @@ export const LocationInput = ({ type, placeholder, value, lat, lng, onChange, on
     latestData.current.lng = lng;
   }, [value, lat, lng]);
 
-  // Click Outside Handler
+  // Click Outside Handler (robust against Leaflet tile DOM recycling during dragging)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (target && !target.isConnected) return;
+      if (containerRef.current && !containerRef.current.contains(target)) {
         setIsOpen(false);
-        setShowMap(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -117,32 +97,45 @@ export const LocationInput = ({ type, placeholder, value, lat, lng, onChange, on
   }, []);
 
   const handleSelect = (loc: SavedLocation) => {
+    setInputValue(loc.name);
+    latestData.current = {
+      lat: loc.lat,
+      lng: loc.long,
+      lastFetchedAddress: loc.name,
+    };
     onChange(loc.name, loc.lat, loc.long);
     setIsOpen(false);
     setSearchQuery('');
   };
 
-  const handleMapChange = async (lat: number, lng: number) => {
+  const handleMapChange = async (pickedLat: number, pickedLng: number) => {
     setIsLoading(true);
     onLoadingChange?.(true);
-    latestData.current.lat = lat;
-    latestData.current.lng = lng;
+    latestData.current.lat = pickedLat;
+    latestData.current.lng = pickedLng;
 
     try {
-      const res = await fetch(`/api/auth/geocode/reverse?lat=${lat}&lon=${lng}`);
+      const res = await fetch(`/api/auth/geocode/reverse?lat=${pickedLat}&lon=${pickedLng}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const result = Array.isArray(data) ? data[0] : data?.features?.[0]?.properties || data;
 
       if (result?.formatted) {
         latestData.current.lastFetchedAddress = result.formatted;
         setInputValue(result.formatted);
-        onChange(result.formatted, lat, lng);
-        // Close both on successful pick
-        setIsOpen(false);
-        setShowMap(false);
+        onChange(result.formatted, pickedLat, pickedLng);
+      } else {
+        const fallbackAddress = `Pinned Location (${pickedLat.toFixed(4)}, ${pickedLng.toFixed(4)})`;
+        latestData.current.lastFetchedAddress = fallbackAddress;
+        setInputValue(fallbackAddress);
+        onChange(fallbackAddress, pickedLat, pickedLng);
       }
     } catch (err) {
-      console.error("Reverse geocoding failed", err);
+      console.error("Reverse geocoding failed, using fallback coordinates", err);
+      const fallbackAddress = `Pinned Location (${pickedLat.toFixed(4)}, ${pickedLng.toFixed(4)})`;
+      latestData.current.lastFetchedAddress = fallbackAddress;
+      setInputValue(fallbackAddress);
+      onChange(fallbackAddress, pickedLat, pickedLng);
     } finally {
       setIsLoading(false);
       onLoadingChange?.(false);
@@ -150,7 +143,7 @@ export const LocationInput = ({ type, placeholder, value, lat, lng, onChange, on
   };
 
   return (
-    <div ref={containerRef} className="flex items-start gap-4 relative mb-6 last:mb-0">
+    <div ref={containerRef} className={`flex items-start gap-4 relative mb-6 last:mb-0 ${isOpen ? 'z-50' : 'z-0'}`}>
       {/* Connector Line */}
       <div className="flex flex-col items-center absolute left-0 h-full">
         <div className={`w-3 h-3 rounded-full mt-5 ring-4 ${
@@ -178,80 +171,100 @@ export const LocationInput = ({ type, placeholder, value, lat, lng, onChange, on
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[70] overflow-hidden animate-in fade-in slide-in-from-top-2">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2">
             
             {/* Dynamic View Toggle (Map vs List) */}
             <button
                 type="button"
                 onClick={() => {
                     setShowMap(!showMap);
-                    setSearchQuery(''); // Clear search when swapping views
+                    setSearchQuery('');
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-4 font-bold text-sm border-b transition-colors cursor-pointer ${
+                className={`w-full flex items-center justify-between px-4 py-3.5 font-bold text-sm border-b transition-colors cursor-pointer ${
                     showMap ? 'bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100' : 'bg-blue-50/50 text-blue-600 border-blue-100 hover:bg-blue-50'
                 }`}
             >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-lg ${
-                    showMap ? 'bg-slate-500 shadow-slate-100' : 'bg-blue-600 shadow-blue-200'
-                }`}>
-                    {showMap ? <List size={16} /> : <MapIcon size={16} />}
+                <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm ${
+                        showMap ? 'bg-slate-500' : 'bg-blue-600 shadow-blue-200'
+                    }`}>
+                        {showMap ? <List size={16} /> : <MapIcon size={16} />}
+                    </div>
+                    <span>{showMap ? 'Show Saved Locations' : 'Choose from Maps'}</span>
                 </div>
-                {showMap ? 'Show Saved Locations' : 'Choose from Maps'}
+                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                    showMap ? 'text-slate-400 bg-slate-200/70 border-slate-300/60' : 'text-blue-700 bg-blue-100/80 border-blue-200'
+                }`}>
+                    {showMap ? 'Demo Locked' : 'Recommended'}
+                </span>
             </button>
 
-            {/* Contextual Search Input */}
-            <div className="p-3 border-b border-slate-100 bg-slate-50/30 flex items-center gap-3">
-              <Search className="w-4 h-4 text-slate-400" />
-              <input
-                autoFocus
-                className="bg-transparent border-none outline-none text-sm w-full font-bold text-slate-700"
-                placeholder={showMap ? "Search address or place..." : "Search saved locations..."}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {isLoading && <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />}
-            </div>
-            
-            {/* Conditional Content (Map or List) */}
+            {/* Conditional Content (Map or Censored Saved Locations) */}
             {showMap ? (
-                <div className="animate-in fade-in duration-300">
+                <div>
                     <div className="h-[300px]">
                         <MapPicker
-                            initialLat={latestData.current.lat}
-                            initialLng={latestData.current.lng}
+                            initialLat={lat}
+                            initialLng={lng}
                             onChange={handleMapChange}
                         />
                     </div>
-                    <div className="px-4 py-3 bg-slate-50 border-t border-slate-100">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Click on map to drop a pin</span>
+                    <div className="px-4 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <MapPin size={15} className="text-blue-600 shrink-0" />
+                            <span className="text-xs text-slate-800 font-semibold truncate">
+                                {isLoading ? 'Locating address...' : inputValue || 'Click map to drop pin'}
+                            </span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsOpen(false)}
+                            className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer shrink-0"
+                        >
+                            Confirm Location
+                        </button>
                     </div>
                 </div>
             ) : (
-                <div className={`max-h-64 overflow-y-auto ${isLoading ? 'opacity-50' : ''}`}>
-                {locations.length > 0 ? (
-                    locations.map((loc) => (
-                    <button
-                        key={loc.id}
-                        type="button"
-                        onClick={() => handleSelect(loc)}
-                        className="w-full text-left px-5 py-4 hover:bg-slate-50 flex items-center justify-between transition-colors group border-b border-slate-50 last:border-0 cursor-pointer"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
-                                <MapPin size={16} />
-                            </div>
-                            <span className="text-sm font-bold text-slate-700 group-hover:text-slate-900">{loc.name}</span>
+                /* Censored & Blurred Saved Locations & Search Feature */
+                <div className="relative overflow-hidden min-h-[300px]">
+                    {/* Blurred background preview of the search bar and saved locations list */}
+                    <div className="filter blur-[3px] opacity-25 select-none pointer-events-none p-3 space-y-3">
+                        <div className="p-2.5 border border-slate-200 rounded-lg bg-slate-50 flex items-center gap-2">
+                            <Search className="w-4 h-4 text-slate-400" />
+                            <div className="h-4 bg-slate-200 rounded w-40" />
                         </div>
-                        {inputValue === loc.name && <Check className="w-4 h-4 text-blue-600" />}
-                    </button>
-                    ))
-                ) : (
-                    <div className="px-4 py-10 text-center">
-                    <p className="text-sm text-slate-400 italic">
-                        {isLoading ? 'Searching...' : 'No saved locations found'}
-                    </p>
+                        {['Manila North Harbor Terminal', 'Batangas International Port & Depot', 'Clark Logistics Hub, Pampanga', 'Subic Bay Freeport Terminal'].map((name, idx) => (
+                            <div key={idx} className="flex items-center gap-3 p-2.5 border-b border-slate-100 last:border-0">
+                                <div className="w-8 h-8 rounded-lg bg-slate-200" />
+                                <div className="h-4 bg-slate-300 rounded w-48" />
+                            </div>
+                        ))}
                     </div>
-                )}
+
+                    {/* Prominent Censored / Demo Locked Overlay */}
+                    <div className="absolute inset-0 bg-white/85 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center z-10 select-none">
+                        <div className="w-12 h-12 rounded-2xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-600 mb-3 shadow-sm ring-4 ring-amber-50">
+                            <Lock className="w-6 h-6" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 bg-amber-100/90 px-2.5 py-0.5 rounded-full border border-amber-200 mb-2">
+                            Feature Not Available in Demo
+                        </span>
+                        <h4 className="text-sm font-bold text-slate-800">
+                            Saved Locations & Search
+                        </h4>
+                        <p className="text-xs text-slate-500 max-w-[260px] mt-1 mb-4 leading-relaxed">
+                            Database search and saved depot rosters are disabled in the demo. Please use the map to drop a pin.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => setShowMap(true)}
+                            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                        >
+                            <MapIcon size={14} />
+                            Choose from Maps (Pin Drop)
+                        </button>
+                    </div>
                 </div>
             )}
           </div>

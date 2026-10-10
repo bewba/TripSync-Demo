@@ -97,21 +97,21 @@ const TripPreview: React.FC<TripPreviewProps> = ({ data, onConfirm, onBack, isSu
                             <p className="text-xs text-gray-500 uppercase font-bold tracking-tight">Assigned Vehicle</p>
                             <p className="text-lg font-medium text-gray-900">{locationInfo.truck?.truck_name || "No vehicle selected"}</p>
                             <p className="text-sm text-gray-600">
-                                {locationInfo.truck?.plate_number.toUpperCase()} {locationInfo.truck?.engine_type ? `• ${locationInfo.truck.engine_type}` : ''}
+                                {locationInfo.truck?.plate_number ? locationInfo.truck.plate_number.toUpperCase() : ''} {locationInfo.truck?.engine_type ? `• ${locationInfo.truck.engine_type}` : ''}
                             </p>
                         </div>
                         <div className="flex-1 border-t sm:border-t-0 sm:border-l border-gray-200 pt-4 sm:pt-0 sm:pl-4">
                             <p className="text-xs text-gray-500 uppercase font-bold tracking-tight flex items-center gap-1">
                                 <Person fontSize="small" /> Driver
                             </p>
-                            <p className="text-lg font-medium text-gray-900">{locationInfo.driver?.username || locationInfo.driverName || "No driver selected"}</p>
+                            <p className="text-lg font-medium text-gray-900">{locationInfo.driver?.full_name || locationInfo.driver?.username || locationInfo.driverName || "No driver selected"}</p>
                         </div>
                         <div className="text-right border-t sm:border-t-0 sm:border-l border-gray-200 pt-4 sm:pt-0 sm:pl-4 w-full sm:w-auto">
                             <p className="text-xs text-gray-500 uppercase font-bold tracking-tight">Est. Consumption</p>
-                            <p className="text-lg font-medium text-blue-700">{fuelRequirement.finalFuelAmount || 0} L</p>
+                            <p className="text-lg font-medium text-blue-700">{fuelRequirement?.finalFuelAmount || 0} L</p>
                             <p className="text-xs text-gray-500 italic mt-1 flex items-center justify-end gap-1">
                                 <LocalGasStation sx={{ fontSize: 14 }} />
-                                {fuelRequirement.distance || 0} km
+                                {fuelRequirement?.distance || 0} km
                             </p>
                         </div>
                     </div>

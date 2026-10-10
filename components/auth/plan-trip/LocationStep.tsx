@@ -5,7 +5,7 @@ import { TruckSelect } from '@/components/auth/plan-trip/2_location/TruckSelect'
 import { DriverSelect } from '@/components/auth/plan-trip/2_location/DriverSelect';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { StepButton } from '@/components/auth/plan-trip/StepButton';
-import { Reorder } from 'motion/react';
+import { Reorder, useDragControls } from 'motion/react';
 import type { TripFormData, Vehicle, Location } from '@/types/auth/plan-trip/trip-info';
 
 // Add a helper for generating stable IDs
@@ -20,6 +20,65 @@ interface LocationStepProps {
 
 interface DraggableLocation extends Location {
     id: string;
+}
+
+function DraggableLocationRow({
+  loc,
+  idx,
+  total,
+  updateLocation,
+  handleLoadingChange,
+  removeStop,
+}: {
+  loc: DraggableLocation;
+  idx: number;
+  total: number;
+  updateLocation: (id: string, name: string, lat?: number, lng?: number) => void;
+  handleLoadingChange: (id: string, isLoading: boolean) => void;
+  removeStop: (id: string) => void;
+}) {
+  const dragControls = useDragControls();
+
+  return (
+    <Reorder.Item
+      key={loc.id}
+      value={loc}
+      dragListener={false}
+      dragControls={dragControls}
+      style={{ zIndex: (total - idx) * 10 }}
+      className="flex items-start sm:items-center gap-3 bg-white/50 rounded-xl p-2 group relative"
+    >
+      <div
+        className="cursor-grab active:cursor-grabbing p-1 text-slate-300 hover:text-slate-500 transition-colors mt-4 sm:mt-0 select-none touch-none shrink-0"
+        onPointerDown={(e) => dragControls.start(e)}
+      >
+        <GripVertical className="w-5 h-5" />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <LocationInput
+          type={idx === 0 ? 'start' : idx === total - 1 ? 'end' : 'middle'}
+          placeholder={idx === 0 ? "City or Warehouse Code" : "Delivery Address"}
+          value={loc.name}
+          lat={loc.lat}
+          lng={loc.long}
+          onChange={(name, lat, lng) => updateLocation(loc.id, name, lat, lng)}
+          onLoadingChange={(isLoading) => handleLoadingChange(loc.id, isLoading)}
+          isLast={idx === total - 1}
+        />
+      </div>
+
+      {total > 2 && (
+        <button
+          type="button"
+          onClick={() => removeStop(loc.id)}
+          className="p-3 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors mt-6 sm:mt-0 shrink-0 cursor-pointer"
+        >
+          <Trash className="w-5 h-5" />
+        </button>
+      )}
+    </Reorder.Item>
+  );
 }
 
 export default function LocationStep({ data, onNext, onBack, showToast }: LocationStepProps) {
@@ -40,6 +99,39 @@ export default function LocationStep({ data, onNext, onBack, showToast }: Locati
   const [loadingInputs, setLoadingInputs] = useState<Record<string, boolean>>({});
 
   const isAnyInputLoading = Object.values(loadingInputs).some(Boolean);
+
+  // Pre-select default sample truck (TRK-107) and driver (Carlos Gomez / drv-107) if none chosen
+  useEffect(() => {
+    if (!selectedVehicle) {
+      fetch('/api/auth/view-vehicles/view-vehicles?planner=true')
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then((vehicles: Vehicle[]) => {
+          if (Array.isArray(vehicles) && vehicles.length > 0) {
+            const preferred = vehicles.find((v) => v.truck_id === 'TRK-107' || v.id === 'TRK-107') || vehicles[0];
+            setSelectedVehicle(preferred);
+          }
+        })
+        .catch((err) => console.error('Failed to pre-select default vehicle', err));
+    }
+
+    if (!selectedDriver) {
+      fetch('/api/auth/view-drivers/view-drivers?planner=true')
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then((drivers: any[]) => {
+          if (Array.isArray(drivers) && drivers.length > 0) {
+            const preferred = drivers.find((d) => d.id === 'drv-107' || d.username === 'cgomez') || drivers[0];
+            setSelectedDriver(preferred);
+          }
+        })
+        .catch((err) => console.error('Failed to pre-select default driver', err));
+    }
+  }, []);
 
   const updateLocation = (id: string, name: string, lat?: number, lng?: number) => {
     setLocations(prev => prev.map(loc => 
@@ -117,39 +209,17 @@ export default function LocationStep({ data, onNext, onBack, showToast }: Locati
   return (
     <div className="bg-surface-container-lowest p-4 sm:p-6 lg:p-10 rounded-xl shadow-sm space-y-8 border border-slate-100 w-full">
       <div className="space-y-4">
-        <Reorder.Group axis="y" values={locations} onReorder={setLocations} className="space-y-4">
+        <Reorder.Group axis="y" values={locations} onReorder={setLocations} className="space-y-4 relative z-20">
           {locations.map((loc, idx) => (
-            <Reorder.Item 
-                key={loc.id} 
-                value={loc}
-                className="flex items-start sm:items-center gap-3 bg-white/50 rounded-xl p-2 group"
-            >
-              <div className="cursor-grab active:cursor-grabbing p-1 text-slate-300 group-hover:text-slate-400 transition-colors mt-4 sm:mt-0">
-                <GripVertical className="w-5 h-5" />
-              </div>
-              
-              <div className="flex-1">
-                <LocationInput
-                  type={idx === 0 ? 'start' : idx === locations.length - 1 ? 'end' : 'middle'}
-                  placeholder={idx === 0 ? "City or Warehouse Code" : "Delivery Address"}
-                  value={loc.name}
-                  lat={loc.lat}
-                  lng={loc.long}
-                  onChange={(name, lat, lng) => updateLocation(loc.id, name, lat, lng)}
-                  onLoadingChange={(isLoading) => handleLoadingChange(loc.id, isLoading)}
-                  isLast={idx === locations.length - 1}
-                />
-              </div>
-
-              {locations.length > 2 && (
-                <button
-                  onClick={() => removeStop(loc.id)}
-                  className="p-3 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors mt-6 sm:mt-0"
-                >
-                  <Trash className="w-5 h-5" />
-                </button>
-              )}
-            </Reorder.Item>
+            <DraggableLocationRow
+              key={loc.id}
+              loc={loc}
+              idx={idx}
+              total={locations.length}
+              updateLocation={updateLocation}
+              handleLoadingChange={handleLoadingChange}
+              removeStop={removeStop}
+            />
           ))}
         </Reorder.Group>
       </div>
@@ -161,7 +231,7 @@ export default function LocationStep({ data, onNext, onBack, showToast }: Locati
         <Plus className="w-4 h-4 " /> Add Stop
       </button>
 
-      <div className="space-y-6 pt-4">
+      <div className="space-y-6 pt-4 relative z-0">
         <TruckSelect
           value={selectedVehicle?.id as string}
           selectedVehicle={selectedVehicle}

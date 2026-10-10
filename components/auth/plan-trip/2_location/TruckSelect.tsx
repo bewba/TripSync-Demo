@@ -20,7 +20,7 @@ export const TruckSelect = ({ onChange, value, selectedVehicle }: TruckSelectPro
   const fetchVehicles = async (query: string = '') => {
     try {
       setIsLoading(true);
-      const url = `/api/auth/view-vehicles/view-vehicles?planner=true&limit=5${query ? `&q=${encodeURIComponent(query)}` : ''}`;
+      const url = `/api/auth/view-vehicles/view-vehicles?planner=true&limit=25${query ? `&q=${encodeURIComponent(query)}` : ''}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('Failed to fetch');
       const data: TruckRecord[] = await res.json();
@@ -58,7 +58,7 @@ export const TruckSelect = ({ onChange, value, selectedVehicle }: TruckSelectPro
     onChange(null, v);
     setIsOpen(false);
     setSearchQuery('');
-    // Reset to top 5 after selection
+    // Reset to top after selection
     fetchVehicles('');
   };
 
@@ -78,9 +78,9 @@ export const TruckSelect = ({ onChange, value, selectedVehicle }: TruckSelectPro
           className={`w-full bg-surface-container-low border border-slate-200 rounded-lg px-4 py-3 text-left flex justify-between items-center focus:ring-2 focus:ring-secondary/20 transition-all font-medium outline-none cursor-pointer`}
         >
           {selectedVehicle ? (
-            <span className="text-on-surface">{selectedVehicle.truck_name}</span>
+            <span className="text-on-surface font-semibold">{selectedVehicle.truck_name}</span>
           ) : (
-            <span className="text-slate-400">Select a vehicle</span>
+            <span className="text-slate-400">Select an available vehicle</span>
           )}
           <ChevronDown className={`w-4 h-4 text-on-surface-variant transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
@@ -99,31 +99,46 @@ export const TruckSelect = ({ onChange, value, selectedVehicle }: TruckSelectPro
               {isLoading && <Loader2 className="w-4 h-4 text-secondary animate-spin" />}
             </div>
             
-            <div className={`max-h-60 overflow-y-auto ${isLoading ? 'opacity-50' : ''}`}>
+            <div className={`max-h-64 overflow-y-auto ${isLoading ? 'opacity-50' : ''}`}>
               {vehicles.length > 0 ? (
-                vehicles.map((v) => (
-                  <button
-                    key={v.id}
-                    type="button"
-                    onClick={() => handleSelect(v)}
-                    className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center justify-between transition-colors group cursor-pointer"
-                  >
-                    <div>
-                      <p className="text-sm font-bold text-on-surface flex items-center gap-2">
-                        <span className="text-blue-600">[{v.truck_id}]</span> {v.truck_name}
-                        {v.plate_number && (
-                          <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded uppercase font-black">
-                            {v.plate_number}
+                vehicles.map((v) => {
+                  const isAvailable = v.status === 'Pending Trip Assignment';
+                  const isInMotion = v.status === 'In Motion';
+
+                  return (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => handleSelect(v)}
+                      className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center justify-between transition-colors group cursor-pointer border-b border-slate-50 last:border-b-0"
+                    >
+                      <div className="flex-1 pr-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-blue-600 font-mono">[{v.truck_id}]</span>
+                          <span className="text-sm font-bold text-on-surface">{v.truck_name}</span>
+                          {v.plate_number && (
+                            <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded uppercase font-mono font-bold">
+                              {v.plate_number}
+                            </span>
+                          )}
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                            isAvailable
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : isInMotion
+                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                              : 'bg-slate-100 text-slate-600 border border-slate-200'
+                          }`}>
+                            {isAvailable ? 'Available' : v.status}
                           </span>
-                        )}
-                      </p>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-tighter font-black">
-                        Efficiency: {v.fuel_efficiency} KM/L • {v.engine_type || 'Standard'}
-                      </p>
-                    </div>
-                    {value === v.id && <Check className="w-4 h-4 text-secondary" />}
-                  </button>
-                ))
+                        </div>
+                        <p className="text-[11px] text-slate-500 font-medium mt-1">
+                          Efficiency: <strong className="text-slate-700">{v.fuel_efficiency} KM/L</strong> • Engine: {v.engine_type || 'Standard'}
+                        </p>
+                      </div>
+                      {value === v.id && <Check className="w-4 h-4 text-secondary shrink-0" />}
+                    </button>
+                  );
+                })
               ) : (
                 <div className="px-4 py-8 text-center">
                   <p className="text-sm text-slate-400 italic">

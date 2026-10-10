@@ -126,10 +126,12 @@ export default function ActiveDriversMap({
                 }
             });
 
-            // Initial Bounds Fitting: only run ONCE on initial load
+            // Initial Bounds Fitting: only run ONCE on initial load (skip if a driver is already pre-selected)
             if (!hasFittedInitialBoundsRef.current && drivers.length > 0) {
-                const bounds = L.latLngBounds(drivers.map((d) => [d.lat, d.lng] as [number, number]));
-                map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14, animate: false });
+                if (!selectedDriverId) {
+                    const bounds = L.latLngBounds(drivers.map((d) => [d.lat, d.lng] as [number, number]));
+                    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14, animate: false });
+                }
                 hasFittedInitialBoundsRef.current = true;
             }
 

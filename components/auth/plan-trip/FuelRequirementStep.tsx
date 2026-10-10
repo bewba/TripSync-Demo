@@ -29,6 +29,7 @@ export default function FuelRequirementStep({ data, onNext, onBack, onReturnToSt
     const locations = data.locationInfo?.locations || [];
 
     const [segmentDistances, setSegmentDistances] = useState<number[]>([]);
+    const [routeWaypoints, setRouteWaypoints] = useState<[number, number][]>(data.locationInfo?.waypoints || []);
 
     const [efficiencyRate, setEfficiencyRate] = useState(data.locationInfo?.truck?.fuel_efficiency || 0);
 
@@ -100,6 +101,17 @@ export default function FuelRequirementStep({ data, onNext, onBack, onReturnToSt
 
                 const distances = results.map((res: any) => res.distance?.distanceKm || 0);
                 setSegmentDistances(distances);
+
+                // Preserve TomTom/demoStore road waypoints across all segments
+                const allWaypoints: [number, number][] = [];
+                results.forEach((res: any) => {
+                    if (res?.distance?.waypoints && Array.isArray(res.distance.waypoints)) {
+                        allWaypoints.push(...res.distance.waypoints);
+                    }
+                });
+                if (allWaypoints.length > 0) {
+                    setRouteWaypoints(allWaypoints);
+                }
             } catch (error: any) {
                 console.error('Parallel routing error:', error);
                 showToast(error.message || "Failed to calculate distances.", "error");
@@ -244,6 +256,7 @@ export default function FuelRequirementStep({ data, onNext, onBack, onReturnToSt
                 // 1. Fallback for truckId (ensures it's never undefined)
                 truckId: data.locationInfo?.truckId ?? "",
                 estDistanceRequired: segmentDistances,
+                waypoints: routeWaypoints.length > 0 ? routeWaypoints : data.locationInfo?.waypoints,
                 // 2. Use 'as any' or a fallback for the truck object to clear the TruckRecord error
                 truck: data.locationInfo?.truck ? {
                     ...data.locationInfo.truck,

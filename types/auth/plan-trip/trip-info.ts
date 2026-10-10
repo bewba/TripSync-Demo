@@ -54,6 +54,7 @@ export interface TripFormData {
 
     estDistanceRequired?: number[];
     applyToll?: boolean;
+    waypoints?: [number, number][];
   };
   inventoryItems: InventoryItem[];
   fuelRequirement: fuelRequirements;

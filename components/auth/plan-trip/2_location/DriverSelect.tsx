@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { User, ChevronDown, Search, Loader2, Check } from 'lucide-react';
+import { UserCheck, ChevronDown, Search, Loader2, Check } from 'lucide-react';
 import { Driver } from '@/types/types';
 
 interface DriverSelectProps {
@@ -28,7 +28,7 @@ export const DriverSelect = ({ onChange, value, selectedDriver }: DriverSelectPr
             setIsLoading(true);
 
             // Constructing the URL with search and filter parameters
-            const url = `/api/auth/view-drivers/view-drivers?planner=true&limit=5${query ? `&q=${encodeURIComponent(query)}` : ''
+            const url = `/api/auth/view-drivers/view-drivers?planner=true&limit=25${query ? `&q=${encodeURIComponent(query)}` : ''
                 }`;
 
             const res = await fetch(url);
@@ -44,7 +44,7 @@ export const DriverSelect = ({ onChange, value, selectedDriver }: DriverSelectPr
         }
     };
 
-    // Search Trigger: Re-fetches drivers whenever the searchQuery changes (debounced)
+    // Debounced search re-query (200ms) only active when dropdown is open
     useEffect(() => {
         if (!isOpen) return;
 
@@ -55,7 +55,7 @@ export const DriverSelect = ({ onChange, value, selectedDriver }: DriverSelectPr
         return () => clearTimeout(timer);
     }, [searchQuery, isOpen]);
 
-    // Handle click outside to close dropdown
+    // Handle click outside to close
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -70,15 +70,13 @@ export const DriverSelect = ({ onChange, value, selectedDriver }: DriverSelectPr
         onChange(null, d);
         setIsOpen(false);
         setSearchQuery('');
-
-        // Refresh the endpoint to clear search results and return to the default top 5 list
         fetchDrivers('');
     };
 
     return (
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 relative" ref={containerRef}>
             <div className="sm:w-32 flex items-center gap-2">
-                <User className="w-5 h-5 text-on-surface-variant" />
+                <UserCheck className="w-5 h-5 text-on-surface-variant" />
                 <label className="text-xs font-bold text-on-primary-fixed-variant uppercase tracking-wider">
                     Driver
                 </label>
@@ -91,9 +89,11 @@ export const DriverSelect = ({ onChange, value, selectedDriver }: DriverSelectPr
                     className={`w-full bg-surface-container-low border border-slate-200 rounded-lg px-4 py-3 text-left flex justify-between items-center focus:ring-2 focus:ring-secondary/20 transition-all font-medium outline-none cursor-pointer`}
                 >
                     {selectedDriver ? (
-                        <span className="text-on-surface">{selectedDriver.username}</span>
+                        <span className="text-on-surface font-semibold">
+                            {selectedDriver.full_name || selectedDriver.username}
+                        </span>
                     ) : (
-                        <span className="text-slate-400">Select a driver</span>
+                        <span className="text-slate-400">Select an available driver</span>
                     )}
                     <ChevronDown className={`w-4 h-4 text-on-surface-variant transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -113,31 +113,45 @@ export const DriverSelect = ({ onChange, value, selectedDriver }: DriverSelectPr
                             {isLoading && <Loader2 className="w-4 h-4 text-secondary animate-spin" />}
                         </div>
 
-                        <div className={`max-h-60 overflow-y-auto ${isLoading ? 'opacity-50' : ''}`}>
+                        <div className={`max-h-64 overflow-y-auto ${isLoading ? 'opacity-50' : ''}`}>
                             {drivers.length > 0 ? (
-                                drivers.map((d) => (
-                                    <button
-                                        key={d.id}
-                                        type="button"
-                                        onClick={() => handleSelect(d)}
-                                        className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center justify-between transition-colors group cursor-pointer"
-                                    >
-                                        <div>
-                                            <p className="text-sm font-bold text-on-surface flex items-center gap-2">
-                                                {d.username}
-                                                {d.license_number && (
-                                                    <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded uppercase font-black">
-                                                        {d.license_number}
+                                drivers.map((d) => {
+                                    const isAvailable = d.status === 'Pending Trip Assignment';
+                                    const isInMotion = d.status === 'In Motion';
+
+                                    return (
+                                        <button
+                                            key={d.id}
+                                            type="button"
+                                            onClick={() => handleSelect(d)}
+                                            className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center justify-between transition-colors group cursor-pointer border-b border-slate-50 last:border-b-0"
+                                        >
+                                            <div className="flex-1 pr-3">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="text-sm font-bold text-on-surface">
+                                                        {d.full_name || d.username}
                                                     </span>
-                                                )}
-                                            </p>
-                                            <p className="text-[10px] text-slate-400 uppercase tracking-tighter font-black">
-                                                {d.status || 'Active'}
-                                            </p>
-                                        </div>
-                                        {value === d.id && <Check className="w-4 h-4 text-secondary" />}
-                                    </button>
-                                ))
+                                                    <span className="text-xs text-slate-400 font-mono">
+                                                        (@{d.username})
+                                                    </span>
+                                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                                                        isAvailable
+                                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                            : isInMotion
+                                                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                                            : 'bg-slate-100 text-slate-600 border border-slate-200'
+                                                    }`}>
+                                                        {isAvailable ? 'Available' : d.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[11px] text-slate-500 font-medium mt-1">
+                                                    License: <strong className="text-slate-700 font-mono">{d.license_number || 'N/A'}</strong> • {d.phone_number || 'No contact'}
+                                                </p>
+                                            </div>
+                                            {value === d.id && <Check className="w-4 h-4 text-secondary shrink-0" />}
+                                        </button>
+                                    );
+                                })
                             ) : (
                                 <div className="px-4 py-8 text-center">
                                     <p className="text-sm text-slate-400 italic">

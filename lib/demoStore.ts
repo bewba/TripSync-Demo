@@ -353,8 +353,11 @@ class DemoStore {
       }
     }
 
-    // Generate waypoints between origin and destination
-    const waypoints = generateInterpolatedWaypoints(origin.lat, origin.long, dest.lat, dest.long, 20);
+    // Use provided road waypoints (e.g. TomTom routing) if available, otherwise interpolate
+    const providedWaypoints = payload.locationInfo?.waypoints;
+    const waypoints: [number, number][] = (Array.isArray(providedWaypoints) && providedWaypoints.length > 1)
+      ? providedWaypoints
+      : generateInterpolatedWaypoints(origin.lat, origin.long, dest.lat, dest.long, 20);
 
     const newTrip = {
       id: newId,
@@ -369,11 +372,11 @@ class DemoStore {
         notes: payload.requestInfo?.notes || '',
       },
       location_info: {
-        truckId: truckId || 'TRK-106',
-        truck: payload.locationInfo?.truck || this.vehicles[5],
-        driverId: driverId || 'drv-106',
-        driverName: payload.locationInfo?.driverName || payload.locationInfo?.driver?.full_name || 'Mark Bautista',
-        driver: payload.locationInfo?.driver || this.drivers[5],
+        truckId: truckId || 'TRK-107',
+        truck: payload.locationInfo?.truck || this.vehicles[6],
+        driverId: driverId || 'drv-107',
+        driverName: payload.locationInfo?.driverName || payload.locationInfo?.driver?.full_name || 'Carlos Gomez',
+        driver: payload.locationInfo?.driver || this.drivers[6],
         locations: [
           { name: origin.name, order: 1, lat: origin.lat, long: origin.long },
           { name: dest.name, order: 2, lat: dest.lat, long: dest.long },
@@ -382,6 +385,7 @@ class DemoStore {
           haversineDistance(origin.lat, origin.long, dest.lat, dest.long),
         ],
         applyToll: payload.locationInfo?.applyToll ?? true,
+        waypoints,
       },
       inventory_items: payload.inventoryItems || [],
       fuel_requirement: payload.fuelRequirement || {
@@ -407,7 +411,7 @@ class DemoStore {
       route: waypoints,
       currentSegmentIndex: 0,
       segmentProgress: 0.05,
-      speed: 60,
+      speed: 70, // 65-75 km/h
       batteryLevel: 98,
       heading: calculateBearing(p1[0], p1[1], p2[0], p2[1]),
       forward: true,
@@ -431,6 +435,12 @@ class DemoStore {
 
     if (opts?.planner) {
       result = result.filter((v) => v.metric_type === 'km/L');
+      // Prioritize available vehicles at the top
+      result.sort((a, b) => {
+        const aAvail = a.status === 'Pending Trip Assignment' ? 0 : 1;
+        const bAvail = b.status === 'Pending Trip Assignment' ? 0 : 1;
+        return aAvail - bAvail;
+      });
     }
 
     if (opts?.q) {
@@ -469,18 +479,18 @@ class DemoStore {
     const newTruck: TruckRecord = {
       id: truckData.truck_id || `TRK-${100 + this.vehicles.length + 1}`,
       truck_id: truckData.truck_id || `TRK-${100 + this.vehicles.length + 1}`,
-      truck_name: truckData.truck_name || 'New Fleet Vehicle',
+      truck_name: truckData.truck_name || 'Fleet Truck Unit',
       driver: truckData.driver || 'Unassigned',
       driverId: truckData.driverId,
-      fuel_efficiency: truckData.fuel_efficiency || 5.0,
+      fuel_efficiency: truckData.fuel_efficiency || 4.5,
       metric_type: truckData.metric_type || 'km/L',
       engine_type: truckData.engine_type || 'Diesel Standard',
       status: truckData.status || 'Pending Trip Assignment',
-      plate_number: truckData.plate_number || 'NBA-1234',
+      plate_number: truckData.plate_number || 'NBD-0000',
       created_at: new Date().toISOString(),
     };
     this.vehicles.unshift(newTruck);
-    this.addLog(`[INFO] Vehicle ${newTruck.truck_id} (${newTruck.truck_name}) registered in fleet.`);
+    this.addLog(`[INFO] Vehicle ${newTruck.truck_id} (${newTruck.truck_name}) added to fleet inventory.`);
     return newTruck;
   }
 
@@ -505,6 +515,15 @@ class DemoStore {
   // --- Drivers CRUD ---
   public getDrivers(opts?: { planner?: boolean; q?: string; limit?: number }) {
     let result = [...this.drivers];
+
+    if (opts?.planner) {
+      // Prioritize available drivers at the top
+      result.sort((a, b) => {
+        const aAvail = a.status === 'Pending Trip Assignment' ? 0 : 1;
+        const bAvail = b.status === 'Pending Trip Assignment' ? 0 : 1;
+        return aAvail - bAvail;
+      });
+    }
 
     if (opts?.q) {
       const qLower = opts.q.toLowerCase();

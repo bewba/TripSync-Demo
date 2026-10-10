@@ -7,9 +7,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { q, limit } = req.query;
+    const { q, limit, planner } = req.query;
 
     const opts = {
+      planner: planner === 'true',
       q: q as string | undefined,
       limit: limit ? parseInt(limit as string) : undefined,
     };

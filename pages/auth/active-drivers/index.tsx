@@ -22,6 +22,18 @@ export default function ActiveDriversPage() {
 
     const [currentTime, setCurrentTime] = useState<number>(Date.now());
 
+    // Auto-select driver if tripId is passed in query params (e.g. from plan-trip dispatch)
+    useEffect(() => {
+        if (!router.isReady) return;
+        const tripIdQuery = router.query.tripId;
+        if (tripIdQuery && typeof tripIdQuery === 'string' && drivers.length > 0) {
+            const matched = drivers.find(d => d.tripId === tripIdQuery);
+            if (matched) {
+                setSelectedDriverId(matched.tripId);
+            }
+        }
+    }, [router.isReady, router.query.tripId, drivers]);
+
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentTime(Date.now());
