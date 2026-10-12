@@ -50,12 +50,16 @@ export default function LandingPage() {
       <header className="sticky top-0 z-40 bg-[#fafbfc]/80 backdrop-blur-md border-b border-slate-200/60">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 h-18 flex items-center justify-between">
           {/* Brand Logo */}
-          <Link href="/" className="flex items-baseline group">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-9 h-9 rounded-full bg-white border border-slate-200/90 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-slate-300 transition-all">
+              <img 
+                src="/logo-icon.png" 
+                alt="TripSync Logo" 
+                className="w-full h-full object-contain"
+              />
+            </div>
             <span className="text-2xl font-black tracking-tight text-slate-950 group-hover:text-slate-800 transition-colors">
               TripSync
-            </span>
-            <span className="text-xs text-slate-400 font-medium ml-2 tracking-normal">
-              by Innovare
             </span>
           </Link>
 
@@ -341,14 +345,15 @@ export default function LandingPage() {
       {/* Footer matching Mockup */}
       <footer className="border-t border-slate-200/60 bg-[#fafbfc] py-8">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center p-1 shadow-2xs">
+              <img src="/logo-icon.png" alt="TripSync Logo" className="w-full h-full object-contain" />
+            </div>
             <span className="font-semibold text-slate-700">TripSync</span>
-            <span>&bull;</span>
-            <span>Innovare Logistics Systems</span>
           </div>
 
           <div>
-            &copy; {new Date().getFullYear()} Innovare. All rights reserved.
+            &copy; {new Date().getFullYear()} TripSync. All rights reserved.
           </div>
         </div>
       </footer>
