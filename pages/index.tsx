@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { motion } from 'framer-motion';
 import { 
   Ban, 
   Crosshair, 
@@ -59,6 +60,81 @@ const LandingOfflineDriverMap = dynamic(() => import('@/components/landing/Landi
 
 import LandingAnalyticsChart from '@/components/landing/LandingAnalyticsChart';
 
+// Scroll reveal component for silky slide-up entrances
+function ScrollReveal({
+  children,
+  delay = 0,
+  className = '',
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.12 }
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`transform transition-all duration-700 ease-out ${
+        isVisible
+          ? 'opacity-100 translate-y-0'
+          : 'opacity-0 translate-y-12'
+      } ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+// Kinetic word-by-word animation variants for the hero section
+const HERO_WORDS = ['Track', 'every', 'driver', 'and', 'every', 'liter.'];
+
+const heroContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.12,
+    },
+  },
+};
+
+const heroWordVariants = {
+  hidden: {
+    opacity: 0,
+    y: 32,
+    filter: 'blur(8px)',
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: {
+      type: 'spring',
+      damping: 16,
+      stiffness: 120,
+    },
+  },
+};
+
 export default function LandingPage() {
   const [isContactOpen, setIsContactOpen] = useState(false);
 
@@ -73,541 +149,650 @@ export default function LandingPage() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      {/* Top Navbar matching the mockup */}
-      <header className="sticky top-0 z-40 bg-[#fafbfc]/80 backdrop-blur-md border-b border-slate-200/60">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 h-18 flex items-center justify-between">
+      {/* Top Navbar */}
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 h-16 flex items-center justify-between">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-full bg-white border border-slate-200/90 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-slate-300 transition-all">
+            <div className="w-8 h-8 rounded-full bg-white border border-slate-200/90 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-slate-300 transition-all">
               <img 
                 src="/logo-icon.png" 
                 alt="TripSync Logo" 
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="text-2xl font-black tracking-tight text-slate-950 group-hover:text-slate-800 transition-colors">
+            <span className="text-xl font-extrabold tracking-tight text-slate-950 group-hover:text-slate-800 transition-colors">
               TripSync
             </span>
           </Link>
 
-          {/* Navigation Links */}
-          <nav className="flex items-center gap-8 text-sm font-medium text-slate-600">
-            <a 
-              href="#features" 
-              className="hover:text-slate-950 transition-colors scroll-smooth cursor-pointer"
-            >
-              Features
-            </a>
-            <Link 
-              href="/auth/active-drivers" 
-              className="hover:text-slate-950 transition-colors"
-            >
-              Demo
-            </Link>
-          </nav>
+          {/* Navigation Links & Action */}
+          <div className="flex items-center gap-6 sm:gap-8">
+            <nav className="flex items-center gap-6 sm:gap-8 text-sm font-medium text-slate-600">
+              <a 
+                href="#features" 
+                className="hover:text-slate-950 transition-colors scroll-smooth cursor-pointer"
+              >
+                Features
+              </a>
+              <Link 
+                href="/auth/active-drivers" 
+                className="hover:text-slate-950 transition-colors hidden sm:inline"
+              >
+                Demo
+              </Link>
+            </nav>
+
+            <div className="flex items-center gap-3">
+              <Link
+                href="/auth/active-drivers"
+                className="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm rounded-lg shadow-2xs transition-all active:scale-[0.98]"
+              >
+                Try Demo
+              </Link>
+            </div>
+          </div>
         </div>
       </header>
 
       {/* Main Hero Section */}
-      <main className="flex-1">
-        <section className="bg-emerald-600 text-white py-14 sm:py-18 lg:py-20">
-          <div className="max-w-7xl mx-auto px-6 sm:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-              {/* Hero Left Content */}
-              <div className="lg:col-span-5 flex flex-col justify-center">
-                <h1 className="text-4xl sm:text-5xl lg:text-[46px] font-black text-white tracking-tight leading-[1.12]">
-                  Track your drivers and fuel consumption in a few clicks.
-                </h1>
+      <main className="flex-1 overflow-x-clip">
+        <section className="bg-gradient-to-br from-[#079669] via-[#05845b] to-[#036242] text-white pt-16 sm:pt-20 lg:pt-24 pb-20 sm:pb-28 lg:pb-36 relative overflow-visible">
+          {/* Subtle Freight Route Lines (No Grid) */}
+          <div className="absolute inset-0 pointer-events-none opacity-[0.14] select-none overflow-hidden" aria-hidden="true">
+            <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+              {/* Sweeping logistics route lines across the Luzon freight corridor */}
+              <path
+                d="M -120 200 C 220 120, 520 380, 980 220 S 1450 80, 1950 280"
+                fill="none"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeDasharray="10 8"
+              />
+              <path
+                d="M -60 340 C 320 260, 720 480, 1180 320 S 1680 160, 2150 400"
+                fill="none"
+                stroke="white"
+                strokeWidth="1.75"
+                strokeDasharray="6 6"
+              />
+              <path
+                d="M 100 480 C 450 400, 850 600, 1350 440 S 1850 280, 2300 520"
+                fill="none"
+                stroke="white"
+                strokeWidth="1.25"
+                strokeDasharray="4 5"
+              />
+            </svg>
+          </div>
 
-                <p className="mt-6 text-base sm:text-lg text-emerald-50 leading-relaxed max-w-lg">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-10 items-start">
+              {/* Hero Left Content */}
+              <div className="lg:col-span-5 flex flex-col z-10">
+                <motion.h1
+                  variants={heroContainerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="text-5xl sm:text-6xl lg:text-[62px] xl:text-[68px] font-black text-white tracking-[-0.04em] leading-[1.0] max-w-xl"
+                >
+                  {HERO_WORDS.map((word, i) => (
+                    <span key={i} className="inline-block overflow-hidden mr-[0.26em] last:mr-0 pb-1">
+                      <motion.span
+                        variants={heroWordVariants}
+                        className="inline-block will-change-transform"
+                      >
+                        {word}
+                      </motion.span>
+                    </span>
+                  ))}
+                </motion.h1>
+
+                <motion.p
+                  initial={{ opacity: 0, y: 16, filter: 'blur(4px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  transition={{ delay: 0.62, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  className="mt-6 text-base sm:text-lg text-emerald-50/90 leading-relaxed max-w-lg font-normal"
+                >
                   Real-time highway tracking, automated dispatch scheduling, and instantaneous stoppage and GPS blackout alerts for modern freight fleets.
-                </p>
+                </motion.p>
 
                 {/* Action Buttons */}
-                <div className="mt-8 flex flex-wrap items-center gap-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.82, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="mt-8 flex flex-wrap items-center gap-4"
+                >
                   <Link
                     href="/auth/active-drivers"
-                    className="px-6 py-3.5 bg-white hover:bg-emerald-50 text-emerald-950 font-bold text-sm rounded-lg shadow-md transition-all duration-150 inline-flex items-center justify-center cursor-pointer"
+                    className="px-6 py-3.5 bg-white hover:bg-emerald-50 text-emerald-950 font-bold text-sm rounded-lg shadow-sm hover:shadow active:scale-[0.98] transition-all duration-150 inline-flex items-center justify-center cursor-pointer"
                   >
                     Try the Demo
                   </Link>
 
                   <button
                     onClick={() => setIsContactOpen(true)}
-                    className="px-6 py-3.5 bg-emerald-700/80 hover:bg-emerald-700 text-white font-semibold text-sm rounded-lg border border-emerald-400/50 shadow-xs transition-all duration-150 inline-flex items-center justify-center cursor-pointer"
+                    className="px-6 py-3.5 bg-slate-950 hover:bg-slate-900 text-white font-semibold text-sm rounded-lg border border-slate-800 shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-150 inline-flex items-center justify-center cursor-pointer"
                   >
                     Contact us
                   </button>
-                </div>
+                </motion.div>
               </div>
 
-              {/* Hero Right: Live Interactive Leaflet Map with Driver Roster Sidebar */}
-              <div className="lg:col-span-7 w-full shadow-2xl rounded-2xl overflow-hidden">
-                <LandingHeroMap />
-              </div>
+              {/* Hero Right: Live Interactive Leaflet Map with Driver Roster Sidebar - Aligned with headline top, bleeding downward */}
+              <motion.div
+                initial={{ opacity: 0, y: 35, scale: 0.985 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: 0.35, duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+                className="lg:col-span-7 xl:col-span-7 w-full relative z-20 translate-y-0 lg:-mb-28 sm:-mb-20 -mb-14"
+              >
+                {/* Map Window Container: Contained horizontally, bleeding downward */}
+                <div className="w-full shadow-[0_30px_70px_-15px_rgba(0,0,0,0.4)] rounded-2xl ring-1 ring-white/25 overflow-hidden bg-white">
+                  <LandingHeroMap />
+                </div>
+              </motion.div>
             </div>
           </div>
         </section>
 
-        {/* Section 2: What Our Software Prevents (Discord-Inspired Showcase Cards) */}
-        <section className="border-t border-slate-200/60 bg-white py-20 sm:py-28">
+        {/* Section 2: What Our Software Prevents */}
+        <section className="border-t border-slate-200/60 bg-[#f8fafc] pt-24 sm:pt-32 lg:pt-48 pb-20 sm:pb-28">
           <div className="max-w-7xl mx-auto px-6 sm:px-8">
             {/* Section Header */}
             <div className="max-w-2xl mb-14 sm:mb-18">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight">
+              <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-slate-950 tracking-[-0.03em]">
                 What Our Software Prevents
               </h2>
-              <p className="mt-4 text-base sm:text-lg text-slate-500 leading-relaxed">
+              <p className="mt-3 text-base sm:text-lg text-slate-600 leading-relaxed">
                 The stuff that costs you money quietly. TripSync surfaces it before it becomes a pattern.
               </p>
             </div>
 
             <div className="space-y-10 sm:space-y-14">
               {/* Card 1: Unauthorized Stoppages */}
-              <div className="rounded-[32px] bg-slate-50 border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-sm">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                  {/* Left: Authentic Active Drivers App Embed (No floating pills) */}
-                  <div className="lg:col-span-7">
-                    {/* App Window Frame (Styled exactly like /auth/active-drivers) */}
-                    <div className="rounded-2xl bg-white border border-slate-200 shadow-md overflow-hidden text-slate-900">
-                      {/* App Header Bar (Matches /auth/active-drivers header) */}
-                      <div className="bg-white border-b border-slate-200 px-5 py-3.5 flex items-center justify-between">
-                        <div>
-                          <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                            <Navigation className="w-4 h-4 text-blue-600" />
-                            Active Drivers Map
-                          </h3>
-                          <p className="text-[11px] text-slate-500 mt-0.5">
-                            Real-time locations of all currently active trips.
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg font-semibold text-xs border border-blue-100 shadow-2xs">
-                          <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-                          3 Online &bull; 3 Active Trips
-                        </div>
-                      </div>
-
-                      {/* Map & Roster Split Layout (Matches /auth/active-drivers) */}
-                      <div className="p-4 bg-slate-50 flex flex-col md:flex-row gap-3.5">
-                        {/* Live Leaflet Map Area */}
-                        <div className="flex-1 h-72 min-h-[260px] bg-slate-100 rounded-xl shadow-xs border border-slate-200 relative overflow-hidden">
-                          <LandingStoppageMap />
-                        </div>
-
-                        {/* Driver Roster Sidebar (Matches /auth/active-drivers Driver Roster) */}
-                        <div className="w-full md:w-60 bg-white rounded-xl shadow-xs border border-slate-200 p-3 flex flex-col justify-between">
+              <ScrollReveal delay={0}>
+                <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                    {/* Left: Authentic Active Drivers App Embed (No floating pills) */}
+                    <div className="lg:col-span-7">
+                      {/* App Window Frame (Styled exactly like /auth/active-drivers) */}
+                      <div className="rounded-2xl bg-white border border-slate-200 shadow-md overflow-hidden text-slate-900">
+                        {/* App Header Bar (Matches /auth/active-drivers header) */}
+                        <div className="bg-white border-b border-slate-200 px-5 py-3.5 flex items-center justify-between">
                           <div>
-                            <h4 className="font-bold text-slate-800 text-xs mb-2">Driver Roster</h4>
-                            <div className="relative mb-2">
-                              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
-                              <input
-                                type="text"
-                                readOnly
-                                value="Juan Dela Cruz"
-                                className="w-full pl-7 pr-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-[11px] text-slate-700 font-medium"
-                              />
-                            </div>
+                            <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                              <Navigation className="w-4 h-4 text-blue-600" />
+                              Active Drivers Map
+                            </h3>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Real-time locations of all currently active trips.
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg font-semibold text-xs border border-blue-100 shadow-2xs">
+                            <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+                            3 Online &bull; 3 Active Trips
+                          </div>
+                        </div>
 
-                            {/* Driver Card (Matches active-drivers selected state) */}
-                            <div className="w-full text-left p-2.5 rounded-xl bg-blue-50/80 border border-blue-300 ring-1 ring-blue-400 shadow-xs flex items-start gap-2.5">
-                              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                                J
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center justify-between">
-                                  <h5 className="font-semibold text-slate-900 text-xs truncate">Juan Dela Cruz</h5>
-                                  <span className="text-[9px] font-bold text-rose-600 bg-rose-50 border border-rose-100 px-1 py-0.5 rounded">
-                                    0 km/h
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1 text-[10px] font-medium text-rose-600 mt-0.5">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-                                  Stopped (48m)
-                                </div>
-                                <p className="text-[10px] text-slate-500 truncate mt-1">
-                                  Manila &rarr; Calamba
-                                </p>
-                              </div>
-                              <div className="flex flex-col items-center text-[9px] font-bold px-1 py-0.5 rounded text-emerald-700 bg-emerald-50 border border-emerald-200">
-                                <BatteryFull className="w-3 h-3" />
-                                <span>84%</span>
-                              </div>
-                            </div>
+                        {/* Map & Roster Split Layout (Matches /auth/active-drivers) */}
+                        <div className="p-4 bg-slate-50 flex flex-col md:flex-row gap-3.5">
+                          {/* Live Leaflet Map Area */}
+                          <div className="flex-1 h-72 min-h-[260px] bg-slate-100 rounded-xl shadow-xs border border-slate-200 relative overflow-hidden">
+                            <LandingStoppageMap />
                           </div>
 
-                          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 mt-2">
-                            <span>Updated 14:32</span>
-                            <span className="text-blue-600 font-semibold hover:underline cursor-pointer">
-                              Details &rarr;
-                            </span>
+                          {/* Driver Roster Sidebar (Matches /auth/active-drivers Driver Roster) */}
+                          <div className="w-full md:w-60 bg-white rounded-xl shadow-xs border border-slate-200 p-3 flex flex-col justify-between">
+                            <div>
+                              <h4 className="font-bold text-slate-800 text-xs mb-2">Driver Roster</h4>
+                              <div className="relative mb-2">
+                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                                <input
+                                  type="text"
+                                  readOnly
+                                  value="Juan Dela Cruz"
+                                  className="w-full pl-7 pr-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-[11px] text-slate-700 font-medium"
+                                />
+                              </div>
+
+                              {/* Driver Card (Matches active-drivers selected state) */}
+                              <div className="w-full text-left p-2.5 rounded-xl bg-blue-50/80 border border-blue-300 ring-1 ring-blue-400 shadow-xs flex items-start gap-2.5">
+                                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                                  J
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <h5 className="font-semibold text-slate-900 text-xs truncate">Juan Dela Cruz</h5>
+                                    <span className="text-[9px] font-bold text-rose-600 bg-rose-50 border border-rose-100 px-1 py-0.5 rounded">
+                                      0 km/h
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-[10px] font-medium text-rose-600 mt-0.5">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                                    Stopped (48m)
+                                  </div>
+                                  <p className="text-[10px] text-slate-500 truncate mt-1">
+                                    Manila &rarr; Calamba
+                                  </p>
+                                </div>
+                                <div className="flex flex-col items-center text-[9px] font-bold px-1 py-0.5 rounded text-emerald-700 bg-emerald-50 border border-emerald-200">
+                                  <BatteryFull className="w-3 h-3" />
+                                  <span>84%</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 mt-2">
+                              <span>Updated 14:32</span>
+                              <span className="text-blue-600 font-semibold hover:underline cursor-pointer">
+                                Details &rarr;
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Right: Text Description */}
-                  <div className="lg:col-span-5 flex flex-col justify-center">
-                    <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-950 tracking-tight leading-tight">
-                      Unauthorized stops flagged before dispatch even calls
-                    </h3>
+                    {/* Right: Text Description */}
+                    <div className="lg:col-span-5 flex flex-col justify-center">
+                      <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight leading-snug">
+                        Unauthorized stops flagged before dispatch even calls
+                      </h3>
 
-                    <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
-                      When a truck sits outside an approved rest area for more than a few minutes, you know about it — not two hours later when someone notices fuel missing. TripSync calculates idle burn and logs the incident with exact timestamps for review.
-                    </p>
+                      <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
+                        When a truck sits outside an approved rest area for more than a few minutes, you know about it — not two hours later when someone notices fuel missing. TripSync calculates idle burn and logs the incident with exact timestamps for review.
+                      </p>
 
-                    <div className="mt-6 flex items-center gap-2.5 text-xs font-semibold text-rose-700">
-                      <CheckCircle2 className="w-4 h-4 text-rose-600 shrink-0" />
-                      <span>SMS &amp; webhook alerts on perimeter violations</span>
+                      <div className="mt-6 flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-rose-700">
+                        <CheckCircle2 className="w-4 h-4 text-rose-600 shrink-0" />
+                        <span>SMS &amp; webhook alerts on perimeter violations</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </ScrollReveal>
 
 
               {/* Card 2: GPS Signal Cutoffs & Tampering */}
-              <div className="rounded-[32px] bg-slate-50 border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-sm">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                  {/* Left: Content */}
-                  <div className="lg:col-span-5 flex flex-col justify-center order-2 lg:order-1">
-                    <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-950 tracking-tight leading-tight">
-                      Know when a unit goes dark on purpose
-                    </h3>
+              <ScrollReveal delay={100}>
+                <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                    {/* Left: Content */}
+                    <div className="lg:col-span-5 flex flex-col justify-center order-2 lg:order-1">
+                      <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight leading-snug">
+                        Know when a unit goes dark on purpose
+                      </h3>
 
-                    <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
-                      Dead zones happen. Deliberate cuts are different. TripSync distinguishes between a cellular gap and an intentional hardware disconnect — and it alerts dispatch within seconds, not after the truck shows up at the depot.
-                    </p>
+                      <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
+                        Dead zones happen. Deliberate cuts are different. TripSync distinguishes between a cellular gap and an intentional hardware disconnect — and it alerts dispatch within seconds, not after the truck shows up at the depot.
+                      </p>
 
-                    <div className="mt-6 flex items-center gap-2.5 text-xs font-semibold text-amber-800">
-                      <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
-                      <span>Last known coordinates preserved for every blackout event</span>
-                    </div>
-                  </div>
-
-                  {/* Right: Authentic Active Drivers Map App Embed (GPS Disconnect / Offline state) */}
-                  <div className="lg:col-span-7 order-1 lg:order-2">
-                    {/* App Window Frame (Styled exactly like /auth/active-drivers) */}
-                    <div className="rounded-2xl bg-white border border-slate-200 shadow-md overflow-hidden text-slate-900">
-                      {/* App Header Bar (Matches /auth/active-drivers header) */}
-                      <div className="bg-white border-b border-slate-200 px-5 py-3.5 flex items-center justify-between">
-                        <div>
-                          <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                            <Navigation className="w-4 h-4 text-blue-600" />
-                            Active Drivers Map
-                          </h3>
-                          <p className="text-[11px] text-slate-500 mt-0.5">
-                            Real-time locations of all currently active trips.
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg font-semibold text-xs border border-slate-200 shadow-2xs">
-                          <span className="h-2 w-2 rounded-full bg-slate-400"></span>
-                          2 Online &bull; 1 Offline
-                        </div>
+                      <div className="mt-6 flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-amber-800">
+                        <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>Last known coordinates preserved for every blackout event</span>
                       </div>
+                    </div>
 
-                      {/* Map & Roster Split Layout (Matches /auth/active-drivers) */}
-                      <div className="p-4 bg-slate-50 flex flex-col md:flex-row gap-3.5">
-                        {/* Live Leaflet Map Area (Offline Driver at Last Known Coordinates) */}
-                        <div className="flex-1 h-72 min-h-[260px] bg-slate-100 rounded-xl shadow-xs border border-slate-200 relative overflow-hidden">
-                          <LandingOfflineDriverMap />
+                    {/* Right: Authentic Active Drivers Map App Embed (GPS Disconnect / Offline state) */}
+                    <div className="lg:col-span-7 order-1 lg:order-2">
+                      {/* App Window Frame (Styled exactly like /auth/active-drivers) */}
+                      <div className="rounded-2xl bg-white border border-slate-200 shadow-md overflow-hidden text-slate-900">
+                        {/* App Header Bar (Matches /auth/active-drivers header) */}
+                        <div className="bg-white border-b border-slate-200 px-5 py-3.5 flex items-center justify-between">
+                          <div>
+                            <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                              <Navigation className="w-4 h-4 text-blue-600" />
+                              Active Drivers Map
+                            </h3>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Real-time locations of all currently active trips.
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg font-semibold text-xs border border-slate-200 shadow-2xs">
+                            <span className="h-2 w-2 rounded-full bg-slate-400"></span>
+                            2 Online &bull; 1 Offline
+                          </div>
                         </div>
 
-                        {/* Driver Roster Sidebar (Matches /auth/active-drivers Driver Roster with Offline State) */}
-                        <div className="w-full md:w-60 bg-white rounded-xl shadow-xs border border-slate-200 p-3 flex flex-col justify-between">
-                          <div>
-                            <h4 className="font-bold text-slate-800 text-xs mb-2">Driver Roster</h4>
-                            <div className="relative mb-2">
-                              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
-                              <input
-                                type="text"
-                                readOnly
-                                value="Arnel Mendoza"
-                                className="w-full pl-7 pr-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-[11px] text-slate-700 font-medium"
-                              />
-                            </div>
-
-                            {/* Driver Card (Matches active-drivers selected offline state) */}
-                            <div className="w-full text-left p-2.5 rounded-xl bg-slate-50/90 border border-slate-300 ring-1 ring-slate-400 shadow-xs flex items-start gap-2.5">
-                              <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                                A
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center justify-between">
-                                  <h5 className="font-semibold text-slate-900 text-xs truncate">Arnel Mendoza</h5>
-                                  <span className="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-1 py-0.5 rounded">
-                                    Offline
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1 text-[10px] font-medium text-slate-500 mt-0.5">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
-                                  Offline
-                                </div>
-                                <p className="text-[10px] text-slate-500 truncate mt-1">
-                                  Manila &rarr; Batangas
-                                </p>
-                              </div>
-                              <div className="flex flex-col items-center text-[9px] font-bold px-1 py-0.5 rounded text-rose-700 bg-rose-50 border border-rose-200">
-                                <BatteryWarning className="w-3 h-3" />
-                                <span>18%</span>
-                              </div>
-                            </div>
+                        {/* Map & Roster Split Layout (Matches /auth/active-drivers) */}
+                        <div className="p-4 bg-slate-50 flex flex-col md:flex-row gap-3.5">
+                          {/* Live Leaflet Map Area (Offline Driver at Last Known Coordinates) */}
+                          <div className="flex-1 h-72 min-h-[260px] bg-slate-100 rounded-xl shadow-xs border border-slate-200 relative overflow-hidden">
+                            <LandingOfflineDriverMap />
                           </div>
 
-                          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 mt-2">
-                            <span>Last seen 4m ago</span>
-                            <span className="text-blue-600 font-semibold hover:underline cursor-pointer">
-                              Details &rarr;
-                            </span>
+                          {/* Driver Roster Sidebar (Matches /auth/active-drivers Driver Roster with Offline State) */}
+                          <div className="w-full md:w-60 bg-white rounded-xl shadow-xs border border-slate-200 p-3 flex flex-col justify-between">
+                            <div>
+                              <h4 className="font-bold text-slate-800 text-xs mb-2">Driver Roster</h4>
+                              <div className="relative mb-2">
+                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                                <input
+                                  type="text"
+                                  readOnly
+                                  value="Arnel Mendoza"
+                                  className="w-full pl-7 pr-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-[11px] text-slate-700 font-medium"
+                                />
+                              </div>
+
+                              {/* Driver Card (Matches active-drivers selected offline state) */}
+                              <div className="w-full text-left p-2.5 rounded-xl bg-slate-50/90 border border-slate-300 ring-1 ring-slate-400 shadow-xs flex items-start gap-2.5">
+                                <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                                  A
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <h5 className="font-semibold text-slate-900 text-xs truncate">Arnel Mendoza</h5>
+                                    <span className="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-1 py-0.5 rounded">
+                                      Offline
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-[10px] font-medium text-slate-500 mt-0.5">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                                    Offline
+                                  </div>
+                                  <p className="text-[10px] text-slate-500 truncate mt-1">
+                                    Manila &rarr; Batangas
+                                  </p>
+                                </div>
+                                <div className="flex flex-col items-center text-[9px] font-bold px-1 py-0.5 rounded text-rose-700 bg-rose-50 border border-rose-200">
+                                  <BatteryWarning className="w-3 h-3" />
+                                  <span>18%</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 mt-2">
+                              <span>Last seen 4m ago</span>
+                              <span className="text-blue-600 font-semibold hover:underline cursor-pointer">
+                                Details &rarr;
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </ScrollReveal>
 
 
               {/* Card 3: Fuel Bleed & Siphon Loss */}
-              <div className="rounded-[32px] bg-slate-50 border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-sm">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                  {/* Left: Authentic Analytics Chart Embed matching demo site */}
-                  <div className="lg:col-span-7">
-                    <LandingAnalyticsChart />
-                  </div>
+              <ScrollReveal delay={100}>
+                <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                    {/* Left: Authentic Analytics Chart Embed matching demo site */}
+                    <div className="lg:col-span-7">
+                      <LandingAnalyticsChart />
+                    </div>
 
-                  {/* Right: Text Description */}
-                  <div className="lg:col-span-5 flex flex-col justify-center">
-                    <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-950 tracking-tight leading-tight">
-                      The numbers don't lie — your receipts might
-                    </h3>
+                    {/* Right: Text Description */}
+                    <div className="lg:col-span-5 flex flex-col justify-center">
+                      <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight leading-snug">
+                        The numbers don't lie — your receipts might
+                      </h3>
 
-                    <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
-                      TripSync cross-checks pump receipts against live tank sensor readings. If your rig burned 38 liters more than it was dispatched with, that discrepancy shows up on your dashboard — with trip timestamps, route data, and a full audit trail attached.
-                    </p>
+                      <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
+                        TripSync cross-checks pump receipts against live tank sensor readings. If your rig burned 38 liters more than it was dispatched with, that discrepancy shows up on your dashboard — with trip timestamps, route data, and a full audit trail attached.
+                      </p>
 
-                    <div className="mt-6 flex items-center gap-2.5 text-xs font-semibold text-emerald-800">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>Fuel requested vs. consumed — audit-ready, trip by trip</span>
+                      <div className="mt-6 flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-emerald-800">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>Fuel requested vs. consumed — audit-ready, trip by trip</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </ScrollReveal>
             </div>
           </div>
         </section>
 
         {/* Section 3: Core Fleet Telemetry Features */}
-        <section id="features" className="bg-emerald-600 text-white py-20 sm:py-24 border-t border-emerald-700">
+        <section id="features" className="bg-emerald-700 py-24 sm:py-32 border-t border-emerald-800">
           <div className="max-w-7xl mx-auto px-6 sm:px-8">
-            <div className="max-w-2xl">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                Core Fleet Telemetry Features
-              </h2>
-              <p className="mt-2 text-sm sm:text-base text-emerald-50">
-                Built for precision control room dispatch, tracking, and compliance.
-              </p>
-            </div>
+            <ScrollReveal delay={0}>
+              <div className="max-w-2xl">
+                <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-white tracking-[-0.03em] leading-tight">
+                  Core Fleet Telemetry Features
+                </h2>
+                <p className="mt-3 text-base sm:text-lg text-emerald-100/80 leading-relaxed font-normal">
+                  Built for precision control room dispatch, real-time highway monitoring, and strict fuel audit compliance.
+                </p>
+              </div>
+            </ScrollReveal>
 
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {/* Feature 1: Live Fleet Map */}
-              <div className="rounded-[32px] bg-[#f2f6f2] p-8 sm:p-9 flex flex-col justify-between shadow-sm hover:shadow-md transition-all text-slate-900 border border-white/50">
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-6">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#dbe7db] text-[#1b3d1b]">
-                      <MapPin className="w-3.5 h-3.5 text-emerald-800" />
-                      <span>Fleet Tracking</span>
-                    </span>
+              <ScrollReveal delay={0} className="flex flex-col h-full">
+                <div className="group rounded-3xl bg-white/95 hover:bg-white p-7 sm:p-8 flex flex-col justify-between shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.32)] hover:-translate-y-1.5 transition-all duration-200 text-slate-900 border border-emerald-100/60 hover:border-emerald-300/80 h-full">
+                  <div>
+                    <div className="flex items-center justify-between w-full mb-5">
+                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 group-hover:shadow-md transition-all duration-200">
+                        <MapPin className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
+                      </div>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                        Fleet Tracking
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl sm:text-[22px] font-bold text-slate-950 tracking-tight leading-snug group-hover:text-emerald-950 transition-colors">
+                      Track expressways in sub-second time
+                    </h3>
+
+                    <p className="mt-3 text-sm text-slate-600 leading-relaxed font-normal">
+                      Real-time highway tracking with live coordinate pings, corridor geofencing, and active speed telemetry across Luzon routes.
+                    </p>
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
-                    Track expressways in sub-second time
-                  </h3>
-
-                  <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed max-w-sm">
-                    Real-time highway tracking with live coordinate pings, corridor geofencing, and active speed telemetry across Luzon routes.
-                  </p>
+                  <div className="mt-8 pt-4 border-t border-slate-100">
+                    <Link
+                      href="/auth/active-drivers"
+                      className="w-full inline-flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 hover:bg-emerald-600 text-slate-800 hover:text-white font-semibold text-xs sm:text-sm border border-slate-200 hover:border-emerald-600 shadow-2xs hover:shadow transition-all duration-150 active:scale-[0.98] group/btn"
+                    >
+                      <span>Open Live Map</span>
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
+                    </Link>
+                  </div>
                 </div>
-
-                <div className="mt-8 pt-2 flex justify-center">
-                  <Link
-                    href="/auth/active-drivers"
-                    className="px-6 py-2.5 rounded-full border border-slate-900 text-slate-900 font-semibold text-xs sm:text-sm hover:bg-slate-900 hover:text-white transition-all text-center inline-block"
-                  >
-                    Open Live Map
-                  </Link>
-                </div>
-              </div>
+              </ScrollReveal>
 
               {/* Feature 2: Trip Planning & Scheduling */}
-              <div className="rounded-[32px] bg-[#f2f6f2] p-8 sm:p-9 flex flex-col justify-between shadow-sm hover:shadow-md transition-all text-slate-900 border border-white/50">
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-6">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#dbe7db] text-[#1b3d1b]">
-                      <Calendar className="w-3.5 h-3.5 text-emerald-800" />
-                      <span>Dispatch Scheduling</span>
-                    </span>
+              <ScrollReveal delay={100} className="flex flex-col h-full">
+                <div className="group rounded-3xl bg-white/95 hover:bg-white p-7 sm:p-8 flex flex-col justify-between shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.32)] hover:-translate-y-1.5 transition-all duration-200 text-slate-900 border border-emerald-100/60 hover:border-emerald-300/80 h-full">
+                  <div>
+                    <div className="flex items-center justify-between w-full mb-5">
+                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 group-hover:shadow-md transition-all duration-200">
+                        <Calendar className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
+                      </div>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                        Dispatch Scheduling
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl sm:text-[22px] font-bold text-slate-950 tracking-tight leading-snug group-hover:text-emerald-950 transition-colors">
+                      Plan and dispatch trips in minutes
+                    </h3>
+
+                    <p className="mt-3 text-sm text-slate-600 leading-relaxed font-normal">
+                      Structured 4-step dispatch workflow: driver allocation, geofenced routes, weight limits, and automated fuel estimation.
+                    </p>
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
-                    Plan and dispatch trips in minutes
-                  </h3>
-
-                  <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed max-w-sm">
-                    Structured 4-step dispatch workflow: driver allocation, geofenced routes, weight limits, and automated fuel estimation.
-                  </p>
+                  <div className="mt-8 pt-4 border-t border-slate-100">
+                    <Link
+                      href="/auth/plan-trip"
+                      className="w-full inline-flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 hover:bg-emerald-600 text-slate-800 hover:text-white font-semibold text-xs sm:text-sm border border-slate-200 hover:border-emerald-600 shadow-2xs hover:shadow transition-all duration-150 active:scale-[0.98] group/btn"
+                    >
+                      <span>Trip Dispatch Wizard</span>
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
+                    </Link>
+                  </div>
                 </div>
-
-                <div className="mt-8 pt-2 flex justify-center">
-                  <Link
-                    href="/auth/plan-trip"
-                    className="px-6 py-2.5 rounded-full border border-slate-900 text-slate-900 font-semibold text-xs sm:text-sm hover:bg-slate-900 hover:text-white transition-all text-center inline-block"
-                  >
-                    Trip Dispatch Wizard
-                  </Link>
-                </div>
-              </div>
+              </ScrollReveal>
 
               {/* Feature 3: Flagged Trips & History */}
-              <div className="rounded-[32px] bg-[#f2f6f2] p-8 sm:p-9 flex flex-col justify-between shadow-sm hover:shadow-md transition-all text-slate-900 border border-white/50">
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-6">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#dbe7db] text-[#1b3d1b]">
-                      <RotateCcw className="w-3.5 h-3.5 text-emerald-800" />
-                      <span>Trip History</span>
-                    </span>
+              <ScrollReveal delay={200} className="flex flex-col h-full">
+                <div className="group rounded-3xl bg-white/95 hover:bg-white p-7 sm:p-8 flex flex-col justify-between shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.32)] hover:-translate-y-1.5 transition-all duration-200 text-slate-900 border border-emerald-100/60 hover:border-emerald-300/80 h-full">
+                  <div>
+                    <div className="flex items-center justify-between w-full mb-5">
+                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 group-hover:shadow-md transition-all duration-200">
+                        <RotateCcw className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
+                      </div>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                        Trip History
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl sm:text-[22px] font-bold text-slate-950 tracking-tight leading-snug group-hover:text-emerald-950 transition-colors">
+                      Audit routes and stoppage events
+                    </h3>
+
+                    <p className="mt-3 text-sm text-slate-600 leading-relaxed font-normal">
+                      Forensic breadcrumb replay of past journeys to audit stoppage events, detour warnings, and route breaches.
+                    </p>
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
-                    Audit routes and stoppage events
-                  </h3>
-
-                  <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed max-w-sm">
-                    Forensic breadcrumb replay of past journeys to audit stoppage events, detour warnings, and route breaches.
-                  </p>
+                  <div className="mt-8 pt-4 border-t border-slate-100">
+                    <Link
+                      href="/auth/trip-history"
+                      className="w-full inline-flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 hover:bg-emerald-600 text-slate-800 hover:text-white font-semibold text-xs sm:text-sm border border-slate-200 hover:border-emerald-600 shadow-2xs hover:shadow transition-all duration-150 active:scale-[0.98] group/btn"
+                    >
+                      <span>Audit Trip History</span>
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
+                    </Link>
+                  </div>
                 </div>
-
-                <div className="mt-8 pt-2 flex justify-center">
-                  <Link
-                    href="/auth/trip-history"
-                    className="px-6 py-2.5 rounded-full border border-slate-900 text-slate-900 font-semibold text-xs sm:text-sm hover:bg-slate-900 hover:text-white transition-all text-center inline-block"
-                  >
-                    Audit Trip History
-                  </Link>
-                </div>
-              </div>
+              </ScrollReveal>
 
               {/* Feature 4: Analytics */}
-              <div className="rounded-[32px] bg-[#f2f6f2] p-8 sm:p-9 flex flex-col justify-between shadow-sm hover:shadow-md transition-all text-slate-900 border border-white/50">
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-6">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#dbe7db] text-[#1b3d1b]">
-                      <BarChart3 className="w-3.5 h-3.5 text-emerald-800" />
-                      <span>Fuel Telemetry</span>
-                    </span>
+              <ScrollReveal delay={0} className="flex flex-col h-full">
+                <div className="group rounded-3xl bg-white/95 hover:bg-white p-7 sm:p-8 flex flex-col justify-between shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.32)] hover:-translate-y-1.5 transition-all duration-200 text-slate-900 border border-emerald-100/60 hover:border-emerald-300/80 h-full">
+                  <div>
+                    <div className="flex items-center justify-between w-full mb-5">
+                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 group-hover:shadow-md transition-all duration-200">
+                        <BarChart3 className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
+                      </div>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                        Fuel Telemetry
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl sm:text-[22px] font-bold text-slate-950 tracking-tight leading-snug group-hover:text-emerald-950 transition-colors">
+                      Verify consumption against receipts
+                    </h3>
+
+                    <p className="mt-3 text-sm text-slate-600 leading-relaxed font-normal">
+                      Rig burn rate comparisons against baseline metrics, driver eco-efficiency scorings, and tank sensor siphon audits.
+                    </p>
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
-                    Verify consumption against receipts
-                  </h3>
-
-                  <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed max-w-sm">
-                    Rig burn rate comparisons against baseline metrics, driver eco-efficiency scorings, and tank sensor siphon audits.
-                  </p>
+                  <div className="mt-8 pt-4 border-t border-slate-100">
+                    <Link
+                      href="/auth/analytics"
+                      className="w-full inline-flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 hover:bg-emerald-600 text-slate-800 hover:text-white font-semibold text-xs sm:text-sm border border-slate-200 hover:border-emerald-600 shadow-2xs hover:shadow transition-all duration-150 active:scale-[0.98] group/btn"
+                    >
+                      <span>View Analytics</span>
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
+                    </Link>
+                  </div>
                 </div>
-
-                <div className="mt-8 pt-2 flex justify-center">
-                  <Link
-                    href="/auth/analytics"
-                    className="px-6 py-2.5 rounded-full border border-slate-900 text-slate-900 font-semibold text-xs sm:text-sm hover:bg-slate-900 hover:text-white transition-all text-center inline-block"
-                  >
-                    View Analytics
-                  </Link>
-                </div>
-              </div>
+              </ScrollReveal>
 
               {/* Feature 5: Vehicles, Drivers, etc. */}
-              <div className="rounded-[32px] bg-[#f2f6f2] p-8 sm:p-9 flex flex-col justify-between shadow-sm hover:shadow-md transition-all text-slate-900 border border-white/50">
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-6">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#dbe7db] text-[#1b3d1b]">
-                      <Users className="w-3.5 h-3.5 text-emerald-800" />
-                      <span>Asset Directory</span>
-                    </span>
+              <ScrollReveal delay={100} className="flex flex-col h-full">
+                <div className="group rounded-3xl bg-white/95 hover:bg-white p-7 sm:p-8 flex flex-col justify-between shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.32)] hover:-translate-y-1.5 transition-all duration-200 text-slate-900 border border-emerald-100/60 hover:border-emerald-300/80 h-full">
+                  <div>
+                    <div className="flex items-center justify-between w-full mb-5">
+                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 group-hover:shadow-md transition-all duration-200">
+                        <Users className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
+                      </div>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                        Asset Directory
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl sm:text-[22px] font-bold text-slate-950 tracking-tight leading-snug group-hover:text-emerald-950 transition-colors">
+                      Manage rigs, drivers, and keys
+                    </h3>
+
+                    <p className="mt-3 text-sm text-slate-600 leading-relaxed font-normal">
+                      Consolidated asset directory tracking truck maintenance, odometer counters, driver licenses, and active keys.
+                    </p>
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
-                    Manage rigs, drivers, and keys
-                  </h3>
-
-                  <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed max-w-sm">
-                    Consolidated asset directory tracking truck maintenance, odometer counters, driver licenses, and active keys.
-                  </p>
+                  <div className="mt-8 pt-4 border-t border-slate-100">
+                    <Link
+                      href="/auth/view-vehicles"
+                      className="w-full inline-flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 hover:bg-emerald-600 text-slate-800 hover:text-white font-semibold text-xs sm:text-sm border border-slate-200 hover:border-emerald-600 shadow-2xs hover:shadow transition-all duration-150 active:scale-[0.98] group/btn"
+                    >
+                      <span>Manage Fleet Assets</span>
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
+                    </Link>
+                  </div>
                 </div>
+              </ScrollReveal>
 
-                <div className="mt-8 pt-2 flex justify-center">
-                  <Link
-                    href="/auth/view-vehicles"
-                    className="px-6 py-2.5 rounded-full border border-slate-900 text-slate-900 font-semibold text-xs sm:text-sm hover:bg-slate-900 hover:text-white transition-all text-center inline-block"
-                  >
-                    Manage Fleet Assets
-                  </Link>
-                </div>
-              </div>
+              {/* Feature 6: Instant Telemetry & Blackout Alerts */}
+              <ScrollReveal delay={200} className="flex flex-col h-full">
+                <div className="group rounded-3xl bg-white/95 hover:bg-white p-7 sm:p-8 flex flex-col justify-between shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.32)] hover:-translate-y-1.5 transition-all duration-200 text-slate-900 border border-emerald-100/60 hover:border-emerald-300/80 h-full">
+                  <div>
+                    <div className="flex items-center justify-between w-full mb-5">
+                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 group-hover:shadow-md transition-all duration-200">
+                        <ShieldAlert className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
+                      </div>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                        Telemetry Alerts
+                      </span>
+                    </div>
 
-              {/* Feature 6: System Event Logs */}
-              <div className="rounded-[32px] bg-[#f2f6f2] p-8 sm:p-9 flex flex-col justify-between shadow-sm hover:shadow-md transition-all text-slate-900 border border-white/50">
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-6">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#dbe7db] text-[#1b3d1b]">
-                      <Terminal className="w-3.5 h-3.5 text-emerald-800" />
-                      <span>Event Logs</span>
-                    </span>
+                    <h3 className="text-xl sm:text-[22px] font-bold text-slate-950 tracking-tight leading-snug group-hover:text-emerald-950 transition-colors">
+                      Instant stoppage &amp; blackout detection
+                    </h3>
+
+                    <p className="mt-3 text-sm text-slate-600 leading-relaxed font-normal">
+                      Instantaneous alert triggers when drivers halt outside designated rest stops, cut device power, or encounter GPS dead zones.
+                    </p>
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
-                    Real-time alerts and audit trail
-                  </h3>
-
-                  <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed max-w-sm">
-                    Immutable event streams capturing GPS blackouts, battery cuts, speed threshold violations, and carrier drops.
-                  </p>
+                  <div className="mt-8 pt-4 border-t border-slate-100">
+                    <Link
+                      href="/auth/active-drivers"
+                      className="w-full inline-flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 hover:bg-emerald-600 text-slate-800 hover:text-white font-semibold text-xs sm:text-sm border border-slate-200 hover:border-emerald-600 shadow-2xs hover:shadow transition-all duration-150 active:scale-[0.98] group/btn"
+                    >
+                      <span>View Live Alerts</span>
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
+                    </Link>
+                  </div>
                 </div>
-
-                <div className="mt-8 pt-2 flex justify-center">
-                  <Link
-                    href="/auth/logs"
-                    className="px-6 py-2.5 rounded-full border border-slate-900 text-slate-900 font-semibold text-xs sm:text-sm hover:bg-slate-900 hover:text-white transition-all text-center inline-block"
-                  >
-                    Explore System Logs
-                  </Link>
-                </div>
-              </div>
+              </ScrollReveal>
             </div>
           </div>
         </section>
 
-        {/* Section 4: Bottom Call To Action matching Mockup */}
+        {/* Section 4: Bottom Call To Action */}
         <section className="py-20 sm:py-28 bg-[#fafbfc]">
           <div className="max-w-5xl mx-auto px-6 sm:px-8">
-            <div className="rounded-3xl border border-slate-200/90 bg-white p-10 sm:p-16 text-center shadow-xs">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight">
+            <div className="rounded-3xl border border-slate-200/80 bg-white p-10 sm:p-16 text-center shadow-[0_2px_16px_rgba(0,0,0,0.03)]">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-[-0.03em]">
                 Ready to streamline your fleet operations?
               </h2>
-              <p className="mt-3.5 text-sm sm:text-base text-slate-500 max-w-xl mx-auto">
+              <p className="mt-3.5 text-sm sm:text-base text-slate-500 max-w-xl mx-auto leading-relaxed">
                 Experience real-time telemetry dispatch or speak with our logistics solutions team.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <Link
                   href="/auth/active-drivers"
-                  className="px-6 py-3.5 bg-slate-950 hover:bg-slate-800 text-white font-semibold text-sm rounded-lg shadow-sm transition-all duration-150 cursor-pointer"
+                  className="px-6 py-3.5 bg-slate-950 hover:bg-slate-800 text-white font-semibold text-sm rounded-lg shadow-sm hover:shadow active:scale-[0.98] transition-all duration-150 cursor-pointer inline-flex items-center justify-center"
                 >
                   Try the Demo
                 </Link>
 
                 <button
                   onClick={() => setIsContactOpen(true)}
-                  className="px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm rounded-lg border border-slate-200 shadow-2xs transition-all duration-150 cursor-pointer"
+                  className="px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm rounded-lg border border-slate-200 shadow-2xs active:scale-[0.98] transition-all duration-150 cursor-pointer inline-flex items-center justify-center"
                 >
                   Contact us
                 </button>
@@ -617,18 +802,24 @@ export default function LandingPage() {
         </section>
       </main>
 
-      {/* Footer matching Mockup */}
-      <footer className="border-t border-slate-200/60 bg-[#fafbfc] py-8">
+      {/* Footer */}
+      <footer className="border-t border-slate-200/60 bg-white py-10">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center p-1 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-full bg-white border border-slate-200 flex items-center justify-center p-1 shadow-2xs">
               <img src="/logo-icon.png" alt="TripSync Logo" className="w-full h-full object-contain" />
             </div>
-            <span className="font-semibold text-slate-700">TripSync</span>
+            <span className="font-bold text-slate-800 text-sm tracking-tight">TripSync</span>
+            <span className="text-slate-300">|</span>
+            <span className="text-slate-500">Real-Time Fleet &amp; Fuel Telemetry</span>
           </div>
 
-          <div>
-            &copy; {new Date().getFullYear()} TripSync. All rights reserved.
+          <div className="flex items-center gap-6">
+            <div className="inline-flex items-center gap-2 text-[11px] font-medium text-slate-600 bg-slate-50 border border-slate-200/80 px-3 py-1 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              All systems operational
+            </div>
+            <span>&copy; {new Date().getFullYear()} TripSync. All rights reserved.</span>
           </div>
         </div>
       </footer>

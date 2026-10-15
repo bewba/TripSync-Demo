@@ -19,6 +19,8 @@ export interface LandingDriverConfig {
   baseSpeed: number;
   stepPerPing: number; // Speed multiplier per uniform telemetry ping
   path: [number, number][];
+  status?: 'online' | 'offline';
+  lastSeen?: string;
 }
 
 // Realistic longer regional logistics routes traversing the Makati & BGC freight corridor
@@ -35,6 +37,7 @@ const DEMO_FLEET_CONFIG: LandingDriverConfig[] = [
     baseSpeed: 64,
     stepPerPing: 2, // Fast cruising speed (2 points per ping)
     path: REAL_MCKINLEY_ROAD,
+    status: 'online',
   },
   {
     tripId: 'TRP-102',
@@ -48,6 +51,7 @@ const DEMO_FLEET_CONFIG: LandingDriverConfig[] = [
     baseSpeed: 38,
     stepPerPing: 0.5, // Heavy tanker (1 point every 2 pings)
     path: REAL_AYALA_ROAD,
+    status: 'online',
   },
   {
     tripId: 'TRP-103',
@@ -61,6 +65,22 @@ const DEMO_FLEET_CONFIG: LandingDriverConfig[] = [
     baseSpeed: 54,
     stepPerPing: 1, // Standard urban delivery speed (1 point per ping)
     path: REAL_BGC_ROAD,
+    status: 'online',
+  },
+  {
+    tripId: 'TRP-104',
+    driverName: 'Arnel Mendoza',
+    truckName: 'Isuzu Elf 6W Dropside Truck',
+    plateNumber: 'NDG-3921',
+    battery: 18,
+    origin: 'Manila South Harbor',
+    destination: 'Batangas Logistics Hub',
+    corridor: 'SLEX Southbound • Signal Lost',
+    baseSpeed: 0,
+    stepPerPing: 0, // Stationary offline driver
+    path: [[14.5385, 121.0340]],
+    status: 'offline',
+    lastSeen: '4m ago',
   },
 ];
 
@@ -79,6 +99,7 @@ export default function LandingHeroMap() {
     'TRP-101': 20,
     'TRP-102': 10,
     'TRP-103': 35,
+    'TRP-104': 0,
   });
 
   // Uniform 1-second telemetry ping for all vehicles, moving at different speeds
@@ -112,14 +133,15 @@ export default function LandingHeroMap() {
     return DEMO_FLEET_CONFIG.map((driver) => {
       const idx = stepIndices[driver.tripId] ?? 0;
       const coords = driver.path[idx] || driver.path[0];
-      const speedFluctuation = Math.round(Math.sin(idx * 0.35) * 2);
-      const currentSpeedNum = driver.baseSpeed + speedFluctuation;
+      const isOffline = driver.status === 'offline';
+      const speedFluctuation = isOffline ? 0 : Math.round(Math.sin(idx * 0.35) * 2);
+      const currentSpeedNum = isOffline ? 0 : driver.baseSpeed + speedFluctuation;
 
       return {
         ...driver,
         lat: coords[0],
         lng: coords[1],
-        speed: `${currentSpeedNum} km/h`,
+        speed: isOffline ? 'Offline' : `${currentSpeedNum} km/h`,
       };
     });
   }, [stepIndices]);
@@ -216,25 +238,25 @@ export default function LandingHeroMap() {
       const group = layerGroupRef.current;
 
       currentFleet.forEach((driver) => {
-        // Exactly identical to original: all drivers use same 28px #22c55e green pin, turns blue on hover
         const isHovered = driver.tripId === hoveredDriverId;
+        const isOffline = driver.status === 'offline';
         const size = isHovered ? 38 : 28;
-        const zIndex = isHovered ? 1000 : 100;
-        const bgColor = isHovered ? '#2563eb' : '#22c55e';
+        const zIndex = isHovered ? 1000 : (isOffline ? 60 : 100);
+        const bgColor = isHovered ? '#3b82f6' : (isOffline ? '#64748b' : '#22c55e');
 
-        // Original circular location pin icon
+        // Circular location pin icon matching demo site ActiveDriversMap (no pulsing wave)
         const iconHtml = `
           <div style="
             width: ${size}px; height: ${size}px; 
             background: ${bgColor}; 
-            border: 3px solid white; 
+            border: 2.5px solid white; 
             border-radius: 50%; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s ease;
+            transition: background 0.2s ease, transform 0.2s ease;
             cursor: pointer;
           ">
-            <svg width="${size * 0.5}" height="${size * 0.5}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="${size * 0.5}" height="${size * 0.5}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
               <circle cx="12" cy="10" r="3"/>
             </svg>
@@ -242,11 +264,33 @@ export default function LandingHeroMap() {
         `;
 
         const icon = L.divIcon({
-          className: 'bg-transparent',
+          className: 'hero-live-marker bg-transparent',
           html: iconHtml,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2],
         });
+
+        const statusBadgeHtml = isOffline
+          ? `<div style="
+              display: inline-flex; align-items: center; gap: 4px;
+              background: #f1f5f9; color: #475569;
+              font-size: 10px; font-weight: 700;
+              padding: 2px 6px; border-radius: 4px;
+              margin-bottom: 2px;
+              border: 1px solid #cbd5e1;
+            ">
+              ● OFFLINE
+            </div>`
+          : `<div style="
+              display: inline-flex; align-items: center; gap: 4px;
+              background: #ecfdf5; color: #059669;
+              font-size: 10px; font-weight: 700;
+              padding: 2px 6px; border-radius: 4px;
+              margin-bottom: 2px;
+              border: 1px solid #a7f3d0;
+            ">
+              ● Online &bull; ${driver.speed}
+            </div>`;
 
         const tooltipHtml = `
           <div style="font-family: Inter, ui-sans-serif, system-ui, sans-serif; padding: 4px; min-width: 140px;">
@@ -257,18 +301,14 @@ export default function LandingHeroMap() {
             <div style="font-size: 10.5px; color: #64748b; margin-bottom: 3px;">
               ${driver.truckName}
             </div>
-            <div style="
-              display: inline-flex; align-items: center; gap: 4px;
-              background: #ecfdf5; color: #059669;
-              font-size: 10px; font-weight: 700;
-              padding: 2px 6px; border-radius: 4px;
-              margin-bottom: 2px;
-              border: 1px solid #a7f3d0;
-            ">
-              ● In Motion &bull; ${driver.speed}
-            </div>
-            <div style="font-size: 10.5px; color: #64748b; margin-top: 2px;">
+            ${statusBadgeHtml}
+            <div style="font-size: 10px; color: #64748b; margin-top: 2px;">
               ${driver.origin} &rarr; ${driver.destination}
+            </div>
+            <div style="font-size: 10px; font-weight: 600; color: ${
+              driver.battery > 50 ? '#047857' : driver.battery > 20 ? '#b45309' : '#be123c'
+            }; margin-top: 2px;">
+              Battery: ${driver.battery}%
             </div>
           </div>
         `;
@@ -322,15 +362,15 @@ export default function LandingHeroMap() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-semibold text-[11px] border border-emerald-100 shadow-2xs">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            3 Online &bull; Makati &amp; BGC Corridors
-          </span>
+          <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg font-semibold text-xs border border-blue-100 shadow-2xs">
+            <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+            3 Online &bull; 3 Active Trips
+          </div>
         </div>
       </div>
 
       {/* Main Container: Map Viewport + Active Drivers Sidebar */}
-      <div className="flex flex-col md:flex-row h-[430px] sm:h-[470px] bg-slate-100 overflow-hidden isolate relative">
+      <div className="flex flex-col md:flex-row h-[460px] sm:h-[510px] lg:h-[530px] bg-slate-100 overflow-hidden isolate relative">
         {/* Map Viewport */}
         <div className="flex-1 h-[260px] md:h-full relative order-1">
           <div ref={containerRef} className="w-full h-full z-0" />
@@ -361,7 +401,9 @@ export default function LandingHeroMap() {
           <div className="p-3 border-b border-slate-100 bg-slate-50/60">
             <div className="flex items-center justify-between mb-2">
               <h2 className="font-bold text-xs text-slate-800 tracking-tight">Driver Roster</h2>
-              <span className="text-[10px] text-emerald-700 font-medium">3 Active Trips</span>
+              <span className="text-[10px] text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                3 Online &bull; 3 Active Trips
+              </span>
             </div>
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
@@ -375,7 +417,7 @@ export default function LandingHeroMap() {
             </div>
           </div>
 
-          {/* Scrollable Driver Cards: all identical styling */}
+          {/* Scrollable Driver Cards: Matches demo site /auth/active-drivers */}
           <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
             {filteredFleet.length === 0 ? (
               <div className="text-center text-slate-400 text-xs py-6">
@@ -384,6 +426,7 @@ export default function LandingHeroMap() {
             ) : (
               filteredFleet.map((driver) => {
                 const isHovered = hoveredDriverId === driver.tripId;
+                const isOffline = driver.status === 'offline';
 
                 return (
                   <div
@@ -394,6 +437,8 @@ export default function LandingHeroMap() {
                     className={`w-full text-left p-2.5 rounded-xl transition-all duration-150 flex items-start gap-2.5 cursor-pointer border ${
                       isHovered
                         ? 'bg-blue-50/80 border-blue-200 shadow-2xs'
+                        : isOffline
+                        ? 'bg-slate-50/70 border-slate-200/80'
                         : 'bg-white hover:bg-slate-50/80 border-slate-100'
                     }`}
                   >
@@ -402,6 +447,8 @@ export default function LandingHeroMap() {
                       className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs transition-colors ${
                         isHovered
                           ? 'bg-blue-600 text-white'
+                          : isOffline
+                          ? 'bg-slate-200 text-slate-600'
                           : 'bg-blue-100 text-blue-600'
                       }`}
                     >
@@ -414,30 +461,46 @@ export default function LandingHeroMap() {
                         <h3 className="font-semibold text-slate-800 text-xs truncate group-hover:text-blue-600 transition-colors">
                           {driver.driverName}
                         </h3>
-                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded shrink-0">
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                            isOffline
+                              ? 'text-slate-500 bg-slate-100 border border-slate-200'
+                              : 'text-blue-600 bg-blue-50'
+                          }`}
+                        >
                           {driver.speed}
                         </span>
                       </div>
 
-                      {/* Online Status & Corridor */}
+                      {/* Online / Offline Status */}
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span className="text-[10.5px] font-medium text-emerald-700">En Route</span>
-                        <span className="text-[10px] text-slate-400">&bull;</span>
-                        <span className="text-[10px] text-slate-500 truncate">{driver.corridor}</span>
+                        <span className={`h-1.5 w-1.5 rounded-full ${isOffline ? 'bg-slate-400' : 'bg-emerald-500'}`}></span>
+                        <span className={`text-[10.5px] font-medium ${isOffline ? 'text-slate-500' : 'text-emerald-700'}`}>
+                          {isOffline ? 'Offline' : 'Online'}
+                        </span>
                       </div>
 
-                      {/* Truck Name */}
-                      <div className="text-[10.5px] text-slate-600 truncate mt-0.5">
-                        {driver.truckName}
+                      {/* Origin -> Destination Route Path */}
+                      <div className="text-[10.5px] text-slate-500 truncate mt-0.5">
+                        {driver.origin} &rarr; {driver.destination}
                       </div>
 
-                      {/* Realistic Long Journey Path */}
-                      <div className="text-[9.5px] text-slate-400 truncate flex items-center gap-1 mt-0.5 font-mono">
-                        <span className="truncate">{driver.origin}</span>
-                        <span>&rarr;</span>
-                        <span className="truncate">{driver.destination}</span>
+                      {/* Bottom Status Row matching demo site */}
+                      <div className="flex items-center justify-between mt-1 pt-1 border-t border-slate-100 text-[10px] text-slate-400">
+                        <span>{isOffline ? 'Last seen 4m ago' : 'Updated just now'}</span>
+                        <span className="text-blue-600 font-semibold hover:underline">
+                          Details &rarr;
+                        </span>
                       </div>
+                    </div>
+
+                    {/* Battery Indicator matching demo site */}
+                    <div className={`flex flex-col items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-md border shrink-0 ${
+                      driver.battery > 50 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
+                      driver.battery > 20 ? 'text-amber-700 bg-amber-50 border-amber-200' :
+                      'text-rose-700 bg-rose-50 border-rose-200'
+                    }`}>
+                      <span>{driver.battery}%</span>
                     </div>
                   </div>
                 );
