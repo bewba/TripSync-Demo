@@ -2,10 +2,17 @@
 
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { Loader2, Maximize2, Search, Navigation } from 'lucide-react';
-import { REAL_MCKINLEY_ROAD, REAL_AYALA_ROAD, REAL_BGC_ROAD } from './routesData';
+import { REAL_MCKINLEY_ROAD, REAL_AYALA_ROAD, REAL_BGC_ROAD, REAL_EDSA_ROAD } from './routesData';
 
 const GEOAPIFY_KEY = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY || 'e520b867332a41708a3ac5a694477ae5';
 const TILE_URL = `https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=${GEOAPIFY_KEY}`;
+
+function formatDuration(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  if (m === 0) return `${s}s`;
+  return `${m}m ${s < 10 ? '0' : ''}${s}s`;
+}
 
 export interface LandingDriverConfig {
   tripId: string;
@@ -19,12 +26,29 @@ export interface LandingDriverConfig {
   baseSpeed: number;
   stepPerPing: number; // Speed multiplier per uniform telemetry ping
   path: [number, number][];
-  status?: 'online' | 'offline';
+  status?: 'online' | 'offline' | 'stopped';
   lastSeen?: string;
+  initialStoppedSeconds?: number;
 }
 
 // Realistic longer regional logistics routes traversing the Makati & BGC freight corridor
 const DEMO_FLEET_CONFIG: LandingDriverConfig[] = [
+  {
+    tripId: 'TRP-106',
+    driverName: 'Mark Bautista',
+    truckName: 'Hino 500 Refrigerated Delivery Van',
+    plateNumber: 'NCR-7719',
+    battery: 62,
+    origin: 'Manila South Harbor Port',
+    destination: 'Laguna Technopark Industrial Hub',
+    corridor: 'McKinley Pkwy • Stoppage Detected',
+    baseSpeed: 0,
+    stepPerPing: 0, // Stationary stopped driver
+    // Mid-route waypoint along McKinley Parkway corridor (clearly stopped mid-transit, not at the beginning)
+    path: [[14.5485, 121.0392]],
+    status: 'stopped',
+    initialStoppedSeconds: 1122, // 18m 42s elapsed stop time
+  },
   {
     tripId: 'TRP-101',
     driverName: 'Juan dela Cruz',
@@ -82,6 +106,20 @@ const DEMO_FLEET_CONFIG: LandingDriverConfig[] = [
     status: 'offline',
     lastSeen: '4m ago',
   },
+  {
+    tripId: 'TRP-105',
+    driverName: 'Danilo Reyes',
+    truckName: 'Isuzu Forward 8W Cargo Truck',
+    plateNumber: 'NBZ-4412',
+    battery: 84,
+    origin: 'Pasig Regional Sorting Facility',
+    destination: 'Cavite Gateway Terminal',
+    corridor: 'EDSA Arterial • Buendia Flyover',
+    baseSpeed: 48,
+    stepPerPing: 1, // Standard cruising speed along EDSA corridor
+    path: REAL_EDSA_ROAD,
+    status: 'online',
+  },
 ];
 
 export default function LandingHeroMap() {
@@ -96,17 +134,21 @@ export default function LandingHeroMap() {
 
   // Staggered starting indices for each driver
   const [stepIndices, setStepIndices] = useState<Record<string, number>>({
+    'TRP-106': 0,
     'TRP-101': 20,
     'TRP-102': 10,
     'TRP-103': 35,
     'TRP-104': 0,
+    'TRP-105': 25,
   });
+  const [timerTick, setTimerTick] = useState(0);
 
-  // Uniform 1-second telemetry ping for all vehicles, moving at different speeds
+  // Uniform 1-second telemetry ping for all vehicles, moving at different speeds & ticking stopped timer
   useEffect(() => {
     let pingCount = 0;
     const interval = setInterval(() => {
       pingCount += 1;
+      setTimerTick((t) => t + 1);
       setStepIndices((prev) => {
         const next: Record<string, number> = {};
         DEMO_FLEET_CONFIG.forEach((driver) => {
@@ -134,17 +176,25 @@ export default function LandingHeroMap() {
       const idx = stepIndices[driver.tripId] ?? 0;
       const coords = driver.path[idx] || driver.path[0];
       const isOffline = driver.status === 'offline';
-      const speedFluctuation = isOffline ? 0 : Math.round(Math.sin(idx * 0.35) * 2);
-      const currentSpeedNum = isOffline ? 0 : driver.baseSpeed + speedFluctuation;
+      const isStopped = driver.status === 'stopped';
+      const speedFluctuation = isOffline || isStopped ? 0 : Math.round(Math.sin(idx * 0.35) * 2);
+      const currentSpeedNum = isOffline || isStopped ? 0 : driver.baseSpeed + speedFluctuation;
+      const stoppedDurationSec = isStopped ? (driver.initialStoppedSeconds ?? 0) + timerTick : 0;
 
       return {
         ...driver,
         lat: coords[0],
         lng: coords[1],
-        speed: isOffline ? 'Offline' : `${currentSpeedNum} km/h`,
+        speed: isOffline ? 'Offline' : isStopped ? '0 km/h' : `${currentSpeedNum} km/h`,
+        stoppedDurationSec,
+        formattedStoppedDuration: formatDuration(stoppedDurationSec),
       };
     });
-  }, [stepIndices]);
+  }, [stepIndices, timerTick]);
+
+  const onlineCount = useMemo(() => currentFleet.filter((d) => d.status === 'online').length, [currentFleet]);
+  const stoppedCount = useMemo(() => currentFleet.filter((d) => d.status === 'stopped').length, [currentFleet]);
+  const activeTripsCount = useMemo(() => currentFleet.filter((d) => d.status !== 'offline').length, [currentFleet]);
 
   const filteredFleet = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -240,9 +290,10 @@ export default function LandingHeroMap() {
       currentFleet.forEach((driver) => {
         const isHovered = driver.tripId === hoveredDriverId;
         const isOffline = driver.status === 'offline';
+        const isStopped = driver.status === 'stopped';
         const size = isHovered ? 38 : 28;
-        const zIndex = isHovered ? 1000 : (isOffline ? 60 : 100);
-        const bgColor = isHovered ? '#3b82f6' : (isOffline ? '#64748b' : '#22c55e');
+        const zIndex = isHovered ? 1000 : isOffline ? 60 : isStopped ? 700 : 100;
+        const bgColor = isHovered ? '#3b82f6' : isOffline ? '#64748b' : isStopped ? '#ef4444' : '#22c55e';
 
         // Circular location pin icon matching demo site ActiveDriversMap (no pulsing wave)
         const iconHtml = `
@@ -280,6 +331,17 @@ export default function LandingHeroMap() {
               border: 1px solid #cbd5e1;
             ">
               ● OFFLINE
+            </div>`
+          : isStopped
+          ? `<div style="
+              display: inline-flex; align-items: center; gap: 4px;
+              background: #fef2f2; color: #dc2626;
+              font-size: 10px; font-weight: 700;
+              padding: 2px 6px; border-radius: 4px;
+              margin-bottom: 2px;
+              border: 1px solid #fca5a5;
+            ">
+              ● STOPPED (${driver.formattedStoppedDuration})
             </div>`
           : `<div style="
               display: inline-flex; align-items: center; gap: 4px;
@@ -364,15 +426,15 @@ export default function LandingHeroMap() {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg font-semibold text-xs border border-blue-100 shadow-2xs">
             <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-            3 Online &bull; 3 Active Trips
+            {onlineCount} Online &bull; {stoppedCount} Stopped &bull; {activeTripsCount} Active Trips
           </div>
         </div>
       </div>
 
       {/* Main Container: Map Viewport + Active Drivers Sidebar */}
-      <div className="flex flex-col md:flex-row h-[460px] sm:h-[510px] lg:h-[530px] bg-slate-100 overflow-hidden isolate relative">
+      <div className="flex flex-col md:flex-row h-[500px] sm:h-[540px] lg:h-[560px] xl:h-[600px] bg-slate-100 overflow-hidden isolate relative">
         {/* Map Viewport */}
-        <div className="flex-1 h-[260px] md:h-full relative order-1">
+        <div className="flex-1 h-[290px] md:h-full relative order-1">
           <div ref={containerRef} className="w-full h-full z-0" />
 
           {!isMapReady && (
@@ -399,11 +461,8 @@ export default function LandingHeroMap() {
         <div className="w-full md:w-64 lg:w-72 bg-white border-t md:border-t-0 md:border-l border-slate-200/90 flex flex-col order-2 h-[170px] md:h-full">
           {/* Sidebar Header & Search */}
           <div className="p-3 border-b border-slate-100 bg-slate-50/60">
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2">
               <h2 className="font-bold text-xs text-slate-800 tracking-tight">Driver Roster</h2>
-              <span className="text-[10px] text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-                3 Online &bull; 3 Active Trips
-              </span>
             </div>
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
@@ -427,6 +486,7 @@ export default function LandingHeroMap() {
               filteredFleet.map((driver) => {
                 const isHovered = hoveredDriverId === driver.tripId;
                 const isOffline = driver.status === 'offline';
+                const isStopped = driver.status === 'stopped';
 
                 return (
                   <div
@@ -439,6 +499,8 @@ export default function LandingHeroMap() {
                         ? 'bg-blue-50/80 border-blue-200 shadow-2xs'
                         : isOffline
                         ? 'bg-slate-50/70 border-slate-200/80'
+                        : isStopped
+                        ? 'bg-rose-50/40 border-rose-200 hover:bg-rose-50/70'
                         : 'bg-white hover:bg-slate-50/80 border-slate-100'
                     }`}
                   >
@@ -449,6 +511,8 @@ export default function LandingHeroMap() {
                           ? 'bg-blue-600 text-white'
                           : isOffline
                           ? 'bg-slate-200 text-slate-600'
+                          : isStopped
+                          ? 'bg-rose-100 text-rose-600 border border-rose-200'
                           : 'bg-blue-100 text-blue-600'
                       }`}
                     >
@@ -465,6 +529,8 @@ export default function LandingHeroMap() {
                           className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
                             isOffline
                               ? 'text-slate-500 bg-slate-100 border border-slate-200'
+                              : isStopped
+                              ? 'text-rose-600 bg-rose-50 border border-rose-200'
                               : 'text-blue-600 bg-blue-50'
                           }`}
                         >
@@ -472,12 +538,26 @@ export default function LandingHeroMap() {
                         </span>
                       </div>
 
-                      {/* Online / Offline Status */}
+                      {/* Online / Offline / Stopped Status */}
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className={`h-1.5 w-1.5 rounded-full ${isOffline ? 'bg-slate-400' : 'bg-emerald-500'}`}></span>
-                        <span className={`text-[10.5px] font-medium ${isOffline ? 'text-slate-500' : 'text-emerald-700'}`}>
-                          {isOffline ? 'Offline' : 'Online'}
-                        </span>
+                        {isOffline ? (
+                          <>
+                            <span className="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                            <span className="text-[10.5px] font-medium text-slate-500">Offline</span>
+                          </>
+                        ) : isStopped ? (
+                          <>
+                            <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                            <span className="text-[10.5px] font-medium text-rose-600 font-semibold">
+                              Stopped ({driver.formattedStoppedDuration})
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                            <span className="text-[10.5px] font-medium text-emerald-700">Online</span>
+                          </>
+                        )}
                       </div>
 
                       {/* Origin -> Destination Route Path */}
@@ -487,7 +567,13 @@ export default function LandingHeroMap() {
 
                       {/* Bottom Status Row matching demo site */}
                       <div className="flex items-center justify-between mt-1 pt-1 border-t border-slate-100 text-[10px] text-slate-400">
-                        <span>{isOffline ? 'Last seen 4m ago' : 'Updated just now'}</span>
+                        <span>
+                          {isOffline
+                            ? 'Last seen 4m ago'
+                            : isStopped
+                            ? 'Unscheduled stoppage detected'
+                            : 'Updated just now'}
+                        </span>
                         <span className="text-blue-600 font-semibold hover:underline">
                           Details &rarr;
                         </span>

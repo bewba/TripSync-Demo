@@ -197,47 +197,130 @@ export default function LandingPage() {
 
       {/* Main Hero Section */}
       <main className="flex-1 overflow-x-clip">
-        <section className="bg-gradient-to-br from-[#079669] via-[#05845b] to-[#036242] text-white pt-16 sm:pt-20 lg:pt-24 pb-20 sm:pb-28 lg:pb-36 relative overflow-visible">
-          {/* Subtle Freight Route Lines (No Grid) */}
-          <div className="absolute inset-0 pointer-events-none opacity-[0.14] select-none overflow-hidden" aria-hidden="true">
-            <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-              {/* Sweeping logistics route lines across the Luzon freight corridor */}
+        <section className="bg-gradient-to-br from-[#34d399] via-[#10b981] to-[#059669] text-white pt-16 sm:pt-20 lg:pt-24 pb-20 sm:pb-28 lg:pb-36 relative overflow-visible">
+          {/* Dotted Logistics Route Network */}
+          <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
+            <svg
+              className="w-full h-full"
+              viewBox="0 0 1920 800"
+              preserveAspectRatio="xMidYMid slice"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* === DOTTED FREIGHT CORRIDOR LINES === */}
+              {/* Route 1: North Harbor to Northern Luzon Trunk */}
               <path
-                d="M -120 200 C 220 120, 520 380, 980 220 S 1450 80, 1950 280"
+                d="M -100 130 C 280 50, 620 220, 1060 120 S 1520 40, 2040 160"
                 fill="none"
                 stroke="white"
-                strokeWidth="2.5"
+                strokeWidth="2.2"
                 strokeDasharray="10 8"
+                strokeOpacity="0.35"
               />
+
+              {/* Route 2: Metro Manila Central Express Transit */}
               <path
-                d="M -60 340 C 320 260, 720 480, 1180 320 S 1680 160, 2150 400"
+                d="M -120 250 C 240 150, 560 370, 1020 220 S 1500 100, 2040 290"
                 fill="none"
                 stroke="white"
-                strokeWidth="1.75"
+                strokeWidth="2"
+                strokeDasharray="8 6"
+                strokeOpacity="0.32"
+              />
+
+              {/* Route 3: SLEX Southern Luzon Freight Trunk */}
+              <path
+                d="M -60 380 C 320 280, 740 500, 1200 330 S 1680 180, 2160 410"
+                fill="none"
+                stroke="white"
+                strokeWidth="1.8"
                 strokeDasharray="6 6"
+                strokeOpacity="0.28"
               />
+
+              {/* Route 4: Deep Southern Port Corridor to Batangas */}
               <path
-                d="M 100 480 C 450 400, 850 600, 1350 440 S 1850 280, 2300 520"
+                d="M 60 520 C 440 430, 860 620, 1360 450 S 1840 300, 2300 540"
                 fill="none"
                 stroke="white"
-                strokeWidth="1.25"
+                strokeWidth="1.6"
+                strokeDasharray="5 5"
+                strokeOpacity="0.25"
+              />
+
+              {/* Route 5: Cross-Arterial Orbital Ring Route */}
+              <path
+                d="M 140 -40 C 360 200, 680 360, 1120 540 S 1600 680, 1960 760"
+                fill="none"
+                stroke="white"
+                strokeWidth="1.6"
+                strokeDasharray="6 8"
+                strokeOpacity="0.26"
+              />
+
+              {/* Route 6: Coastal Express Tributary Connector */}
+              <path
+                d="M -60 580 C 360 440, 720 200, 1180 160 S 1640 250, 2060 90"
+                fill="none"
+                stroke="white"
+                strokeWidth="1.5"
+                strokeDasharray="4 6"
+                strokeOpacity="0.24"
+              />
+
+              {/* Route 7: Subic-Clark Upper Bypass Route */}
+              <path
+                d="M -40 50 C 380 160, 800 30, 1260 100 S 1700 50, 2080 80"
+                fill="none"
+                stroke="white"
+                strokeWidth="1.3"
                 strokeDasharray="4 5"
+                strokeOpacity="0.22"
+              />
+
+              {/* Route 8: Regional Feeder Corridor (Laguna/Cavite) */}
+              <path
+                d="M 300 680 C 680 550, 1080 610, 1480 450 S 1880 490, 2240 410"
+                fill="none"
+                stroke="white"
+                strokeWidth="1.3"
+                strokeDasharray="5 7"
+                strokeOpacity="0.22"
+              />
+
+              {/* Route 9: Secondary Diagonal Connector */}
+              <path
+                d="M 520 -20 C 660 180, 880 320, 1200 330 S 1580 460, 1920 540"
+                fill="none"
+                stroke="white"
+                strokeWidth="1.2"
+                strokeDasharray="4 4"
+                strokeOpacity="0.2"
+              />
+
+              {/* Route 10: Inland Freight Link */}
+              <path
+                d="M 800 750 C 1040 580, 1340 360, 1680 280 S 1980 210, 2140 180"
+                fill="none"
+                stroke="white"
+                strokeWidth="1.2"
+                strokeDasharray="6 6"
+                strokeOpacity="0.18"
               />
             </svg>
           </div>
 
-          <div className="max-w-7xl mx-auto px-6 sm:px-8 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-10 items-start">
-              {/* Hero Left Content */}
-              <div className="lg:col-span-5 flex flex-col z-10">
+          <div className="max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-6 sm:px-8 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-10 items-start">
+              {/* Hero Left Content - Pushed to the side in a compact column */}
+              <div className="lg:col-span-4 xl:col-span-3 2xl:col-span-3 flex flex-col z-10">
                 <motion.h1
                   variants={heroContainerVariants}
                   initial="hidden"
                   animate="visible"
-                  className="text-5xl sm:text-6xl lg:text-[62px] xl:text-[68px] font-black text-white tracking-[-0.04em] leading-[1.0] max-w-xl"
+                  className="text-4xl sm:text-5xl lg:text-[42px] xl:text-[46px] 2xl:text-[50px] font-black text-white tracking-[-0.035em] leading-[1.04]"
                 >
                   {HERO_WORDS.map((word, i) => (
-                    <span key={i} className="inline-block overflow-hidden mr-[0.26em] last:mr-0 pb-1">
+                    <span key={i} className="inline-block overflow-hidden mr-[0.24em] last:mr-0 pb-1">
                       <motion.span
                         variants={heroWordVariants}
                         className="inline-block will-change-transform"
@@ -252,7 +335,7 @@ export default function LandingPage() {
                   initial={{ opacity: 0, y: 16, filter: 'blur(4px)' }}
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   transition={{ delay: 0.62, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                  className="mt-6 text-base sm:text-lg text-emerald-50/90 leading-relaxed max-w-lg font-normal"
+                  className="mt-6 text-sm sm:text-base lg:text-[15px] xl:text-base text-emerald-50/90 leading-relaxed font-normal"
                 >
                   Real-time highway tracking, automated dispatch scheduling, and instantaneous stoppage and GPS blackout alerts for modern freight fleets.
                 </motion.p>
@@ -262,30 +345,30 @@ export default function LandingPage() {
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.82, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="mt-8 flex flex-wrap items-center gap-4"
+                  className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4"
                 >
                   <Link
                     href="/auth/active-drivers"
-                    className="px-6 py-3.5 bg-white hover:bg-emerald-50 text-emerald-950 font-bold text-sm rounded-lg shadow-sm hover:shadow active:scale-[0.98] transition-all duration-150 inline-flex items-center justify-center cursor-pointer"
+                    className="px-5 sm:px-6 py-3.5 bg-white hover:bg-emerald-50 text-emerald-950 font-bold text-xs sm:text-sm rounded-lg shadow-sm hover:shadow active:scale-[0.98] transition-all duration-150 inline-flex items-center justify-center cursor-pointer whitespace-nowrap"
                   >
                     Try the Demo
                   </Link>
 
                   <button
                     onClick={() => setIsContactOpen(true)}
-                    className="px-6 py-3.5 bg-slate-950 hover:bg-slate-900 text-white font-semibold text-sm rounded-lg border border-slate-800 shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-150 inline-flex items-center justify-center cursor-pointer"
+                    className="px-5 sm:px-6 py-3.5 bg-slate-950 hover:bg-slate-900 text-white font-semibold text-xs sm:text-sm rounded-lg border border-slate-800 shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-150 inline-flex items-center justify-center cursor-pointer whitespace-nowrap"
                   >
                     Contact us
                   </button>
                 </motion.div>
               </div>
 
-              {/* Hero Right: Live Interactive Leaflet Map with Driver Roster Sidebar - Aligned with headline top, bleeding downward */}
+              {/* Hero Right: Live Interactive Leaflet Map with Driver Roster Sidebar - Expanded wider on the right */}
               <motion.div
                 initial={{ opacity: 0, y: 35, scale: 0.985 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ delay: 0.35, duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-                className="lg:col-span-7 xl:col-span-7 w-full relative z-20 translate-y-0 lg:-mb-28 sm:-mb-20 -mb-14"
+                className="lg:col-span-8 xl:col-span-9 2xl:col-span-9 w-full relative z-20 translate-y-0 lg:-mb-28 sm:-mb-20 -mb-14"
               >
                 {/* Map Window Container: Contained horizontally, bleeding downward */}
                 <div className="w-full shadow-[0_30px_70px_-15px_rgba(0,0,0,0.4)] rounded-2xl ring-1 ring-white/25 overflow-hidden bg-white">
