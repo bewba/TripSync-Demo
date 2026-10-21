@@ -4,30 +4,15 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { 
-  Ban, 
-  Crosshair, 
-  Fuel, 
-  MapPin, 
-  Calendar, 
-  RotateCcw, 
-  BarChart3, 
-  Users, 
-  ArrowRight, 
-  CheckCircle2, 
-  ShieldAlert,
-  Radio,
-  Sliders,
-  ChevronRight,
-  ExternalLink,
   Navigation,
-  Terminal,
   BatteryFull,
   BatteryWarning,
   Search,
-  AlertTriangle,
-  ChevronDown
+  CheckCircle2,
+  ArrowRight,
 } from 'lucide-react';
 import ContactModal from '@/components/landing/ContactModal';
+import CoreTelemetrySection from '@/components/landing/CoreTelemetrySection';
 
 // Dynamically load interactive hero map with SSR turned off
 const LandingHeroMap = dynamic(() => import('@/components/landing/LandingHeroMap'), {
@@ -197,7 +182,7 @@ export default function LandingPage() {
 
       {/* Main Hero Section */}
       <main className="flex-1 overflow-x-clip">
-        <section className="bg-gradient-to-br from-[#34d399] via-[#10b981] to-[#059669] text-white pt-16 sm:pt-20 lg:pt-24 pb-20 sm:pb-28 lg:pb-36 relative overflow-visible">
+        <section className="bg-gradient-to-r from-[#059669] via-[#10b981] to-[#34d399] text-white pt-16 sm:pt-20 lg:pt-24 pb-20 sm:pb-28 lg:pb-36 relative overflow-visible">
           {/* Dotted Logistics Route Network */}
           <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
             <svg
@@ -601,258 +586,52 @@ export default function LandingPage() {
               </ScrollReveal>
 
 
-              {/* Card 3: Fuel Bleed & Siphon Loss */}
-              <ScrollReveal delay={100}>
-                <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                    {/* Left: Authentic Analytics Chart Embed matching demo site */}
-                    <div className="lg:col-span-7">
-                      <LandingAnalyticsChart />
-                    </div>
+              {/* Card 3: Fuel Bleed & Siphon Loss (Overlapping Core Telemetry Lighter Green Background) */}
+              <div className="relative">
+                {/* Lighter Green Background extending from 50% height of Card 3 through bottom of section */}
+                <div
+                  className="absolute inset-x-0 top-1/2 bottom-0 bg-emerald-600 pointer-events-none -mb-20 sm:-mb-28"
+                  style={{
+                    left: 'calc(-50vw + 50%)',
+                    width: '100vw',
+                  }}
+                  aria-hidden="true"
+                />
 
-                    {/* Right: Text Description */}
-                    <div className="lg:col-span-5 flex flex-col justify-center">
-                      <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight leading-snug">
-                        The numbers don't lie — your receipts might
-                      </h3>
+                <ScrollReveal delay={100} className="relative z-10">
+                  <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_10px_35px_rgba(0,0,0,0.08)] hover:shadow-[0_16px_45px_rgba(0,0,0,0.12)] transition-all duration-200">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                      {/* Left: Authentic Analytics Chart Embed matching demo site */}
+                      <div className="lg:col-span-7">
+                        <LandingAnalyticsChart />
+                      </div>
 
-                      <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
-                        TripSync cross-checks pump receipts against live tank sensor readings. If your rig burned 38 liters more than it was dispatched with, that discrepancy shows up on your dashboard — with trip timestamps, route data, and a full audit trail attached.
-                      </p>
+                      {/* Right: Text Description */}
+                      <div className="lg:col-span-5 flex flex-col justify-center">
+                        <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight leading-snug">
+                          The numbers don't lie — your receipts might
+                        </h3>
 
-                      <div className="mt-6 flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-emerald-800">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span>Fuel requested vs. consumed — audit-ready, trip by trip</span>
+                        <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
+                          TripSync cross-checks pump receipts against live tank sensor readings. If your rig burned 38 liters more than it was dispatched with, that discrepancy shows up on your dashboard — with trip timestamps, route data, and a full audit trail attached.
+                        </p>
+
+                        <div className="mt-6 flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-emerald-800">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span>Fuel consumption &amp; mileage analytics — audit-ready, trip by trip</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </ScrollReveal>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 3: Core Fleet Telemetry Features */}
-        <section id="features" className="bg-emerald-700 py-24 sm:py-32 border-t border-emerald-800">
-          <div className="max-w-7xl mx-auto px-6 sm:px-8">
-            <ScrollReveal delay={0}>
-              <div className="max-w-2xl">
-                <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-white tracking-[-0.03em] leading-tight">
-                  Core Fleet Telemetry Features
-                </h2>
-                <p className="mt-3 text-base sm:text-lg text-emerald-100/80 leading-relaxed font-normal">
-                  Built for precision control room dispatch, real-time highway monitoring, and strict fuel audit compliance.
-                </p>
+                </ScrollReveal>
               </div>
-            </ScrollReveal>
-
-            <div className="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {/* Feature 1: Live Fleet Map */}
-              <ScrollReveal delay={0} className="flex flex-col h-full">
-                <div className="group rounded-3xl bg-white/95 hover:bg-white p-7 sm:p-8 flex flex-col justify-between shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.32)] hover:-translate-y-1.5 transition-all duration-200 text-slate-900 border border-emerald-100/60 hover:border-emerald-300/80 h-full">
-                  <div>
-                    <div className="flex items-center justify-between w-full mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 group-hover:shadow-md transition-all duration-200">
-                        <MapPin className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
-                      </div>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                        Fleet Tracking
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl sm:text-[22px] font-bold text-slate-950 tracking-tight leading-snug group-hover:text-emerald-950 transition-colors">
-                      Track expressways in sub-second time
-                    </h3>
-
-                    <p className="mt-3 text-sm text-slate-600 leading-relaxed font-normal">
-                      Real-time highway tracking with live coordinate pings, corridor geofencing, and active speed telemetry across Luzon routes.
-                    </p>
-                  </div>
-
-                  <div className="mt-8 pt-4 border-t border-slate-100">
-                    <Link
-                      href="/auth/active-drivers"
-                      className="w-full inline-flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 hover:bg-emerald-600 text-slate-800 hover:text-white font-semibold text-xs sm:text-sm border border-slate-200 hover:border-emerald-600 shadow-2xs hover:shadow transition-all duration-150 active:scale-[0.98] group/btn"
-                    >
-                      <span>Open Live Map</span>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
-                    </Link>
-                  </div>
-                </div>
-              </ScrollReveal>
-
-              {/* Feature 2: Trip Planning & Scheduling */}
-              <ScrollReveal delay={100} className="flex flex-col h-full">
-                <div className="group rounded-3xl bg-white/95 hover:bg-white p-7 sm:p-8 flex flex-col justify-between shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.32)] hover:-translate-y-1.5 transition-all duration-200 text-slate-900 border border-emerald-100/60 hover:border-emerald-300/80 h-full">
-                  <div>
-                    <div className="flex items-center justify-between w-full mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 group-hover:shadow-md transition-all duration-200">
-                        <Calendar className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
-                      </div>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                        Dispatch Scheduling
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl sm:text-[22px] font-bold text-slate-950 tracking-tight leading-snug group-hover:text-emerald-950 transition-colors">
-                      Plan and dispatch trips in minutes
-                    </h3>
-
-                    <p className="mt-3 text-sm text-slate-600 leading-relaxed font-normal">
-                      Structured 4-step dispatch workflow: driver allocation, geofenced routes, weight limits, and automated fuel estimation.
-                    </p>
-                  </div>
-
-                  <div className="mt-8 pt-4 border-t border-slate-100">
-                    <Link
-                      href="/auth/plan-trip"
-                      className="w-full inline-flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 hover:bg-emerald-600 text-slate-800 hover:text-white font-semibold text-xs sm:text-sm border border-slate-200 hover:border-emerald-600 shadow-2xs hover:shadow transition-all duration-150 active:scale-[0.98] group/btn"
-                    >
-                      <span>Trip Dispatch Wizard</span>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
-                    </Link>
-                  </div>
-                </div>
-              </ScrollReveal>
-
-              {/* Feature 3: Flagged Trips & History */}
-              <ScrollReveal delay={200} className="flex flex-col h-full">
-                <div className="group rounded-3xl bg-white/95 hover:bg-white p-7 sm:p-8 flex flex-col justify-between shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.32)] hover:-translate-y-1.5 transition-all duration-200 text-slate-900 border border-emerald-100/60 hover:border-emerald-300/80 h-full">
-                  <div>
-                    <div className="flex items-center justify-between w-full mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 group-hover:shadow-md transition-all duration-200">
-                        <RotateCcw className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
-                      </div>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                        Trip History
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl sm:text-[22px] font-bold text-slate-950 tracking-tight leading-snug group-hover:text-emerald-950 transition-colors">
-                      Audit routes and stoppage events
-                    </h3>
-
-                    <p className="mt-3 text-sm text-slate-600 leading-relaxed font-normal">
-                      Forensic breadcrumb replay of past journeys to audit stoppage events, detour warnings, and route breaches.
-                    </p>
-                  </div>
-
-                  <div className="mt-8 pt-4 border-t border-slate-100">
-                    <Link
-                      href="/auth/trip-history"
-                      className="w-full inline-flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 hover:bg-emerald-600 text-slate-800 hover:text-white font-semibold text-xs sm:text-sm border border-slate-200 hover:border-emerald-600 shadow-2xs hover:shadow transition-all duration-150 active:scale-[0.98] group/btn"
-                    >
-                      <span>Audit Trip History</span>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
-                    </Link>
-                  </div>
-                </div>
-              </ScrollReveal>
-
-              {/* Feature 4: Analytics */}
-              <ScrollReveal delay={0} className="flex flex-col h-full">
-                <div className="group rounded-3xl bg-white/95 hover:bg-white p-7 sm:p-8 flex flex-col justify-between shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.32)] hover:-translate-y-1.5 transition-all duration-200 text-slate-900 border border-emerald-100/60 hover:border-emerald-300/80 h-full">
-                  <div>
-                    <div className="flex items-center justify-between w-full mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 group-hover:shadow-md transition-all duration-200">
-                        <BarChart3 className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
-                      </div>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                        Fuel Telemetry
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl sm:text-[22px] font-bold text-slate-950 tracking-tight leading-snug group-hover:text-emerald-950 transition-colors">
-                      Verify consumption against receipts
-                    </h3>
-
-                    <p className="mt-3 text-sm text-slate-600 leading-relaxed font-normal">
-                      Rig burn rate comparisons against baseline metrics, driver eco-efficiency scorings, and tank sensor siphon audits.
-                    </p>
-                  </div>
-
-                  <div className="mt-8 pt-4 border-t border-slate-100">
-                    <Link
-                      href="/auth/analytics"
-                      className="w-full inline-flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 hover:bg-emerald-600 text-slate-800 hover:text-white font-semibold text-xs sm:text-sm border border-slate-200 hover:border-emerald-600 shadow-2xs hover:shadow transition-all duration-150 active:scale-[0.98] group/btn"
-                    >
-                      <span>View Analytics</span>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
-                    </Link>
-                  </div>
-                </div>
-              </ScrollReveal>
-
-              {/* Feature 5: Vehicles, Drivers, etc. */}
-              <ScrollReveal delay={100} className="flex flex-col h-full">
-                <div className="group rounded-3xl bg-white/95 hover:bg-white p-7 sm:p-8 flex flex-col justify-between shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.32)] hover:-translate-y-1.5 transition-all duration-200 text-slate-900 border border-emerald-100/60 hover:border-emerald-300/80 h-full">
-                  <div>
-                    <div className="flex items-center justify-between w-full mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 group-hover:shadow-md transition-all duration-200">
-                        <Users className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
-                      </div>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                        Asset Directory
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl sm:text-[22px] font-bold text-slate-950 tracking-tight leading-snug group-hover:text-emerald-950 transition-colors">
-                      Manage rigs, drivers, and keys
-                    </h3>
-
-                    <p className="mt-3 text-sm text-slate-600 leading-relaxed font-normal">
-                      Consolidated asset directory tracking truck maintenance, odometer counters, driver licenses, and active keys.
-                    </p>
-                  </div>
-
-                  <div className="mt-8 pt-4 border-t border-slate-100">
-                    <Link
-                      href="/auth/view-vehicles"
-                      className="w-full inline-flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 hover:bg-emerald-600 text-slate-800 hover:text-white font-semibold text-xs sm:text-sm border border-slate-200 hover:border-emerald-600 shadow-2xs hover:shadow transition-all duration-150 active:scale-[0.98] group/btn"
-                    >
-                      <span>Manage Fleet Assets</span>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
-                    </Link>
-                  </div>
-                </div>
-              </ScrollReveal>
-
-              {/* Feature 6: Instant Telemetry & Blackout Alerts */}
-              <ScrollReveal delay={200} className="flex flex-col h-full">
-                <div className="group rounded-3xl bg-white/95 hover:bg-white p-7 sm:p-8 flex flex-col justify-between shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.32)] hover:-translate-y-1.5 transition-all duration-200 text-slate-900 border border-emerald-100/60 hover:border-emerald-300/80 h-full">
-                  <div>
-                    <div className="flex items-center justify-between w-full mb-5">
-                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 group-hover:shadow-md transition-all duration-200">
-                        <ShieldAlert className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
-                      </div>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                        Telemetry Alerts
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl sm:text-[22px] font-bold text-slate-950 tracking-tight leading-snug group-hover:text-emerald-950 transition-colors">
-                      Instant stoppage &amp; blackout detection
-                    </h3>
-
-                    <p className="mt-3 text-sm text-slate-600 leading-relaxed font-normal">
-                      Instantaneous alert triggers when drivers halt outside designated rest stops, cut device power, or encounter GPS dead zones.
-                    </p>
-                  </div>
-
-                  <div className="mt-8 pt-4 border-t border-slate-100">
-                    <Link
-                      href="/auth/active-drivers"
-                      className="w-full inline-flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 hover:bg-emerald-600 text-slate-800 hover:text-white font-semibold text-xs sm:text-sm border border-slate-200 hover:border-emerald-600 shadow-2xs hover:shadow transition-all duration-150 active:scale-[0.98] group/btn"
-                    >
-                      <span>View Live Alerts</span>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
-                    </Link>
-                  </div>
-                </div>
-              </ScrollReveal>
             </div>
           </div>
         </section>
+
+        {/* Section 3: Core Fleet Telemetry Features (Stripe-style card grid) */}
+        <CoreTelemetrySection />
+
 
         {/* Section 4: Bottom Call To Action */}
         <section className="py-20 sm:py-28 bg-[#fafbfc]">
