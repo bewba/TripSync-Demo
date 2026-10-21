@@ -455,10 +455,158 @@ export default function CoreTelemetrySection() {
 
 
           {/* ═══════════════════════════════════════════════════════════
-              CARD 6 — DRIVER APP (COMPACT PORTRAIT: 3 COLS)
-              Embed: Smartphone frame with authentic driver app UI
+              CARD 5 — TRIP REPORTS (COMPACT: 3 COLS)
+              Embed: Authentic Fleet Trip History Report
           ═══════════════════════════════════════════════════════════ */}
           <div className={`${CARD} md:col-span-6 lg:col-span-3`}>
+            <div className="px-6 pt-5 pb-3 flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-950 tracking-tight leading-snug">Trip reports</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Instant PDF manifests &amp; fuel audit reports.</p>
+              </div>
+              <Link href="/auth/trip-history" aria-label="Generate Reports" className="w-7 h-7 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors shrink-0">
+                <Maximize2 className="w-3 h-3" />
+              </Link>
+            </div>
+
+            {/* App window embed: authentic print report document */}
+            <div className="mx-4 mb-4 rounded-xl overflow-hidden border border-slate-200/90 shadow-sm flex flex-col flex-1 bg-white">
+              {/* Modal-style window header */}
+              <div className="bg-white border-b border-slate-100 px-3 py-2 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-6 h-6 rounded-md bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center">
+                    <Printer className="w-3 h-3"/>
+                  </div>
+                  <div>
+                    <div className="text-[10.5px] font-bold text-slate-900 leading-tight">Fleet Trip Manifest</div>
+                    <div className="text-[8px] text-slate-400">PDF Audit Report</div>
+                  </div>
+                </div>
+                <span className="text-[8.5px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200/60">PDF</span>
+              </div>
+
+              {/* Document Sheet Preview matching real report */}
+              <div className="p-2.5 bg-slate-50/60 flex-1 flex flex-col justify-between overflow-y-auto max-h-[385px] space-y-2">
+                <div className="bg-white rounded-lg border border-slate-200/80 p-2.5 shadow-2xs space-y-2">
+                  {/* Document Title Header */}
+                  <div className="border-b border-slate-100 pb-2 flex items-start justify-between">
+                    <div>
+                      <h4 className="text-[10px] font-black uppercase text-slate-900 tracking-tight font-sans">
+                        Fleet Trip History Report
+                      </h4>
+                      <p className="text-[7.5px] text-slate-500 font-medium mt-0.5">
+                        Range: Oct 21, 2026 — Oct 21, 2026
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[6.5px] font-bold text-slate-400 uppercase tracking-wider block">
+                        GENERATED ON
+                      </span>
+                      <span className="text-[8px] font-bold text-slate-700">
+                        10/21/2026
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Aggregated KPI Cards (Matching screenshot) */}
+                  <div className="space-y-1">
+                    <div className="grid grid-cols-3 gap-1">
+                      <div className="bg-slate-50 border border-slate-200/70 rounded-md p-1">
+                        <span className="text-[6.5px] font-bold uppercase tracking-wider text-slate-400 block">TOTAL DISTANCE</span>
+                        <span className="text-[9px] font-black text-slate-800">0.0<span className="text-[7px] font-normal text-slate-400 ml-0.5">km</span></span>
+                      </div>
+                      <div className="bg-slate-50 border border-slate-200/70 rounded-md p-1">
+                        <span className="text-[6.5px] font-bold uppercase tracking-wider text-slate-400 block">FUEL REQUESTED</span>
+                        <span className="text-[9px] font-black text-blue-600">4.4<span className="text-[7px] font-normal text-slate-400 ml-0.5">L</span></span>
+                      </div>
+                      <div className="bg-slate-50 border border-slate-200/70 rounded-md p-1">
+                        <span className="text-[6.5px] font-bold uppercase tracking-wider text-slate-400 block">EST. CONSUMED</span>
+                        <span className="text-[9px] font-black text-slate-800">0.0<span className="text-[7px] font-normal text-slate-400 ml-0.5">L</span></span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="bg-emerald-50/50 border border-emerald-200/60 rounded-md p-1 flex items-center justify-between">
+                        <span className="text-[6.5px] font-bold uppercase tracking-wider text-emerald-700">COMPLETED</span>
+                        <span className="text-[9px] font-black text-slate-800">1<span className="text-[7px] font-normal text-slate-400 ml-0.5">runs</span></span>
+                      </div>
+                      <div className="bg-rose-50/50 border border-rose-200/60 rounded-md p-1 flex items-center justify-between">
+                        <span className="text-[6.5px] font-bold uppercase tracking-wider text-rose-700">CANCELLED</span>
+                        <span className="text-[9px] font-black text-slate-800">0<span className="text-[7px] font-normal text-slate-400 ml-0.5">runs</span></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Trip Record Block (Matching screenshot) */}
+                  <div className="border border-slate-200 rounded-lg p-2 space-y-1.5 bg-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-[9px] font-black text-slate-900 block leading-tight">Trip Record</span>
+                        <span className="text-[6.5px] font-mono text-slate-400">ID: cc3dd6d2-2273-4430...</span>
+                      </div>
+                      <span className="px-1.5 py-0.2 rounded-full border border-emerald-400 text-emerald-700 bg-white font-bold text-[7px]">
+                        COMPLETED
+                      </span>
+                    </div>
+
+                    <div className="border-t border-slate-100 pt-1 grid grid-cols-2 gap-x-2 gap-y-1 text-[7.5px]">
+                      <div>
+                        <span className="text-slate-400 uppercase font-bold text-[6.5px] block">PROJECT TAG</span>
+                        <span className="text-slate-700 font-semibold">—</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 uppercase font-bold text-[6.5px] block">TRAVEL PURPOSE</span>
+                        <span className="text-slate-800 font-bold truncate block">Loading Cargo</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 uppercase font-bold text-[6.5px] block">DATE &amp; TIME</span>
+                        <span className="text-slate-700 font-semibold">Oct 21, 2026 • 13:50</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 uppercase font-bold text-[6.5px] block">SCHEDULED</span>
+                        <span className="text-slate-700 font-semibold truncate block">Oct 21, 2:20 PM</span>
+                      </div>
+                    </div>
+
+                    {/* Vehicle & Consumption Box */}
+                    <div className="bg-slate-50 border border-slate-100 rounded p-1.5 text-[7px] space-y-0.5">
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-slate-800">BOOMTRUCK <span className="font-normal text-slate-400">(BT1)</span></span>
+                        <span className="font-bold text-blue-600">Fuel Req: 4.39 L</span>
+                      </div>
+                      <div className="flex justify-between items-center text-slate-500">
+                        <span>Driver: <strong className="text-slate-700 font-medium">jamesdy7830</strong></span>
+                        <span>Distance: <strong>0.00 km</strong></span>
+                      </div>
+                    </div>
+
+                    {/* Route Segment */}
+                    <div className="pt-0.5">
+                      <span className="text-[6.5px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+                        PER-LEG ROUTE BREAKDOWN
+                      </span>
+                      <div className="flex items-center gap-1 text-[7.5px] font-semibold text-slate-800 truncate">
+                        <span className="w-3 h-3 rounded bg-slate-900 text-white font-mono flex items-center justify-center text-[7px] shrink-0">1</span>
+                        <span className="truncate">SMC, Bulacan → Golden Gate Memorial Park</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* PDF Manifest download button */}
+                <button type="button" className="w-full py-1.5 px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-[8.5px] flex items-center justify-center gap-1.5 transition-all shadow-xs shrink-0">
+                  <Download className="w-3 h-3 text-emerald-400"/>
+                  Export Audit Manifest (PDF)
+                </button>
+              </div>
+            </div>
+          </div>
+
+
+          {/* ═══════════════════════════════════════════════════════════
+              CARD 6 — DRIVER APP (BIGGER: 4 COLS)
+              Embed: Smartphone frame with authentic driver app UI
+          ═══════════════════════════════════════════════════════════ */}
+          <div className={`${CARD} md:col-span-12 lg:col-span-4`}>
             <div className="px-6 pt-5 pb-3 flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-lg sm:text-xl font-bold text-slate-950 tracking-tight leading-snug">Driver app</h3>
@@ -472,16 +620,16 @@ export default function CoreTelemetrySection() {
             {/* App embed: smartphone mockup with authentic Driver App UI */}
             <div className="mx-4 mb-4 flex flex-col items-center justify-center py-1 flex-1">
               {/* Screen Selector Pills */}
-              <div className="flex items-center gap-1 mb-2 bg-slate-100 p-0.5 rounded-lg border border-slate-200/80">
+              <div className="flex items-center gap-1 mb-2.5 bg-slate-100 p-0.5 rounded-xl border border-slate-200/80">
                 {[
-                  { label: 'Assigned', idx: 0 },
-                  { label: 'Details', idx: 1 },
-                  { label: 'Active', idx: 2 },
+                  { label: 'Assigned Trips', idx: 0 },
+                  { label: 'Trip Details', idx: 1 },
+                  { label: 'In Progress', idx: 2 },
                 ].map((s) => (
                   <button
                     key={s.idx}
                     onClick={() => setDriverAppScreen(s.idx)}
-                    className={`px-2 py-0.5 text-[8.5px] font-bold rounded-md transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 text-[9px] font-bold rounded-lg transition-all cursor-pointer ${
                       driverAppScreen === s.idx
                         ? 'bg-white text-slate-900 shadow-2xs'
                         : 'text-slate-400 hover:text-slate-700'
@@ -492,16 +640,16 @@ export default function CoreTelemetrySection() {
                 ))}
               </div>
 
-              {/* Smartphone Frame */}
-              <div className="w-[210px] bg-slate-950 rounded-[28px] p-[6px] border border-slate-800 shadow-2xl relative">
+              {/* Smartphone Frame - scaled with generous width for 4-col slot */}
+              <div className="w-[230px] sm:w-[240px] bg-slate-950 rounded-[30px] p-[7px] border border-slate-800 shadow-2xl relative">
                 {/* Dynamic Island / Speaker Pill */}
-                <div className="w-14 h-3 bg-slate-900 rounded-full mx-auto mb-1 flex items-center justify-center">
+                <div className="w-16 h-3 bg-slate-900 rounded-full mx-auto mb-1.5 flex items-center justify-center">
                   <div className="w-2 h-2 rounded-full bg-slate-950/80 mr-2" />
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-950/60" />
                 </div>
 
                 {/* Smartphone Display */}
-                <div className="bg-[#f6f8fc] rounded-[22px] overflow-hidden border border-slate-800/40 min-h-[355px] max-h-[355px] flex flex-col select-none relative">
+                <div className="bg-[#f6f8fc] rounded-[24px] overflow-hidden border border-slate-800/40 min-h-[360px] max-h-[360px] flex flex-col select-none relative">
                   <AnimatePresence mode="wait">
                     {/* ─────────────────────────────────────────────────────────────
                         SCREEN 0: ASSIGNED TRIPS (Screenshot 1)
@@ -513,14 +661,14 @@ export default function CoreTelemetrySection() {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -8 }}
                         transition={{ duration: 0.2 }}
-                        className="p-3 flex flex-col flex-1"
+                        className="p-3.5 flex flex-col flex-1"
                       >
                         <h4 className="text-base font-extrabold text-slate-900 tracking-tight mb-2.5">
                           Assigned Trips
                         </h4>
 
                         {/* Next Up Card */}
-                        <div className="bg-white rounded-2xl border-2 border-sky-300/80 p-2.5 shadow-sm space-y-2">
+                        <div className="bg-white rounded-2xl border-2 border-sky-300/80 p-3 shadow-sm space-y-2.5">
                           <div className="flex items-center justify-between">
                             <span className="px-2 py-0.5 rounded-md bg-[#e0f2fe] text-[#0284c7] font-bold text-[8.5px] tracking-wider uppercase">
                               NEXT UP
@@ -583,13 +731,13 @@ export default function CoreTelemetrySection() {
                         className="flex flex-col flex-1"
                       >
                         {/* Top App Bar */}
-                        <div className="bg-white border-b border-slate-100 px-3 py-2">
+                        <div className="bg-white border-b border-slate-100 px-3.5 py-2">
                           <h4 className="text-xs font-bold text-slate-900 tracking-tight">
                             Trip Assigned
                           </h4>
                         </div>
 
-                        <div className="p-2.5 space-y-2 overflow-y-auto max-h-[305px] flex-1">
+                        <div className="p-3 space-y-2 overflow-y-auto max-h-[310px] flex-1">
                           {/* Trip Assigned To You Badge */}
                           <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border border-emerald-400 bg-white text-emerald-700 text-[8.5px] font-bold">
                             <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
@@ -601,7 +749,7 @@ export default function CoreTelemetrySection() {
                             <span className="text-[9.5px] font-extrabold text-slate-900 block mb-1">
                               Route
                             </span>
-                            <div className="bg-white rounded-xl border border-slate-200/90 p-2 space-y-2 relative">
+                            <div className="bg-white rounded-xl border border-slate-200/90 p-2.5 space-y-2 relative">
                               <div className="absolute left-[13px] top-[14px] bottom-[16px] w-[1.5px] bg-slate-200" />
 
                               {/* Pickup */}
@@ -653,7 +801,7 @@ export default function CoreTelemetrySection() {
                           </div>
 
                           {/* Tagalog Consent / Terms Notice */}
-                          <div className="rounded-xl bg-[#e0f2fe]/70 border border-sky-200 p-1.5 text-[7px] text-sky-950 leading-snug">
+                          <div className="rounded-xl bg-[#e0f2fe]/70 border border-sky-200 p-2 text-[7px] text-sky-950 leading-snug">
                             <div className="flex items-start gap-1">
                               <span className="w-2.5 h-2.5 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center shrink-0 text-[6.5px]">
                                 i
@@ -669,7 +817,7 @@ export default function CoreTelemetrySection() {
                             <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                               <ArrowRight className="w-2.5 h-2.5" />
                             </div>
-                            <span className="text-[8px] font-bold text-emerald-800 truncate">
+                            <span className="text-[8.5px] font-bold text-emerald-800 truncate">
                               Swipe to Accept &amp; Start Leg 1
                             </span>
                           </div>
@@ -690,13 +838,13 @@ export default function CoreTelemetrySection() {
                         className="flex flex-col flex-1"
                       >
                         {/* Top App Bar */}
-                        <div className="bg-white border-b border-slate-100 px-3 py-2">
+                        <div className="bg-white border-b border-slate-100 px-3.5 py-2">
                           <h4 className="text-xs font-bold text-slate-900 tracking-tight">
                             Trip in Progress
                           </h4>
                         </div>
 
-                        <div className="p-3 flex flex-col justify-between flex-1 text-center">
+                        <div className="p-3.5 flex flex-col justify-between flex-1 text-center">
                           {/* Elapsed Timer */}
                           <div className="pt-2">
                             <div className="text-3xl font-black text-slate-900 font-mono tracking-tight">
@@ -752,98 +900,18 @@ export default function CoreTelemetrySection() {
 
 
           {/* ═══════════════════════════════════════════════════════════
-              CARD 5 — AUTOMATED TRIP REPORT (MEDIUM: 4 COLS)
-              Embed: TripReportTemplate / export modal chrome
-          ═══════════════════════════════════════════════════════════ */}
-          <div className={`${CARD} md:col-span-12 lg:col-span-4`}>
-            <div className="px-6 pt-5 pb-3 flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-950 tracking-tight leading-snug">Trip reports</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Instant PDF manifests &amp; fuel audit reports.</p>
-              </div>
-              <Link href="/auth/trip-history" aria-label="Generate Reports" className="w-7 h-7 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors shrink-0">
-                <Maximize2 className="w-3 h-3" />
-              </Link>
-            </div>
-
-            {/* App window embed: print report modal */}
-            <div className="mx-4 mb-4 rounded-lg overflow-hidden border border-slate-200 shadow-2xs flex flex-col flex-1">
-              {/* Modal-style header */}
-              <div className="bg-white border-b border-slate-200 px-3.5 py-2.5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-md bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center">
-                    <Printer className="w-3.5 h-3.5"/>
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">Trip Manifest</div>
-                    <div className="text-[9px] text-slate-400">TRP-0041 · Oct 16, 2026</div>
-                  </div>
-                </div>
-                <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">PDF</span>
-              </div>
-
-              {/* Report body preview */}
-              <div className="bg-white p-3 space-y-2 flex-1 flex flex-col justify-between">
-                {/* Trip details grid */}
-                <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-                  {[
-                    ['Driver', 'Juan Dela Cruz'],
-                    ['Vehicle', 'Truck #04 · ABC-1234'],
-                    ['Route', 'Manila → Calamba'],
-                    ['Distance', '68.4 km'],
-                    ['Fuel Used', '21.5 L'],
-                    ['Duration', '1h 42m'],
-                  ].map(([k, v]) => (
-                    <div key={k} className="bg-slate-50 rounded-md p-1.5 border border-slate-100">
-                      <div className="text-slate-400 font-semibold">{k}</div>
-                      <div className="font-bold text-slate-800 truncate">{v}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Flags section */}
-                <div className="bg-emerald-50 rounded-md p-2 border border-emerald-100 flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0"/>
-                  <span className="text-[10px] font-bold text-emerald-800">No anomalies detected — 0 flags</span>
-                </div>
-
-                {/* Generation progress */}
-                <div className="bg-white rounded-md p-2 border border-slate-200 space-y-1">
-                  <div className="flex items-center justify-between text-[10px]">
-                    <span className="text-slate-600 font-medium truncate pr-2">{reportStatus}</span>
-                    <span className="text-emerald-700 font-bold font-mono">{Math.min(reportProgress, 100)}%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <motion.div
-                      style={{ width: `${Math.min(reportProgress, 100)}%` }}
-                      className="h-full bg-gradient-to-r from-teal-500 to-emerald-600 rounded-full transition-all duration-300"
-                    />
-                  </div>
-                </div>
-
-                {/* Download button */}
-                <button type="button" className="w-full py-2 px-3 rounded-md bg-slate-900 hover:bg-slate-800 text-white font-semibold text-[10px] flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]">
-                  <Download className="w-3 h-3 text-emerald-400"/>
-                  Download Audit Manifest (PDF)
-                </button>
-              </div>
-            </div>
-          </div>
-
-
-          {/* ═══════════════════════════════════════════════════════════
               CARD 3 — DISPATCH TRIPS IN SECONDS (FULL-WIDTH HERO: 12 COLS)
-              Stripe-style grand showcase banner + interactive wizard steps
+              Plan Trip page mockup matching the real /auth/plan-trip UI
           ═══════════════════════════════════════════════════════════ */}
           <div className="group bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden md:col-span-12 lg:col-span-12">
             {/* Title row */}
-            <div className="px-6 sm:px-8 pt-5 sm:pt-6 pb-3 flex items-start justify-between gap-3 bg-white">
+            <div className="px-6 pt-5 pb-3 flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-lg sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
                   Dispatch trips in seconds
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                  Automated route planning, fuel forecasting, and instant driver dispatch.
+                  Configure logistical routes with real-time precision.
                 </p>
               </div>
               <Link href="/auth/plan-trip" aria-label="Open Plan Trip" className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors shrink-0">
@@ -851,105 +919,165 @@ export default function CoreTelemetrySection() {
               </Link>
             </div>
 
-            {/* Full-bleed gradient body */}
-            <div className="relative flex-1 min-h-[260px] bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 overflow-hidden p-6 sm:p-8">
-              <div className="absolute -top-24 -right-20 w-80 h-80 rounded-full bg-violet-300/20 blur-3xl pointer-events-none"/>
-              <div className="absolute -bottom-16 -left-16 w-72 h-72 rounded-full bg-indigo-300/15 blur-3xl pointer-events-none"/>
-              <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '18px 18px' }}/>
+            {/* App window embed */}
+            <div className="mx-4 mb-4 rounded-xl overflow-hidden border border-slate-200/90 shadow-sm bg-white">
+              {/* Window chrome bar */}
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border-b border-slate-200">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-400"/>
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-400"/>
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"/>
+                </div>
+                <div className="flex-1 flex items-center justify-center gap-1.5">
+                  <Navigation className="w-3 h-3 text-slate-400" />
+                  <span className="text-[11px] text-slate-400 font-medium">New Dispatch · Plan Trip</span>
+                </div>
+              </div>
 
-              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
-                {/* Left side: Wizard status, progress bar & compilation CTA */}
-                <div className="lg:col-span-5 flex flex-col justify-between space-y-5">
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 border border-white/20 text-white text-xs font-semibold mb-3">
-                      <Sparkles className="w-3.5 h-3.5 text-violet-200" />
-                      4-Step Automated Dispatch Wizard
+              {/* Page content */}
+              <div className="bg-white px-5 py-5">
+                {/* Page header */}
+                <div className="text-center mb-5">
+                  <p className="text-[10px] font-bold tracking-widest text-emerald-600 uppercase mb-1">New Dispatch</p>
+                  <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Plan Trip</h2>
+                  <p className="text-xs text-slate-400 mt-1">Configure logistical routes with real-time precision.</p>
+                </div>
+
+                {/* 4-step stepper */}
+                <div className="flex items-start justify-center gap-0 mb-6 overflow-x-auto">
+                  {[
+                    { n: 1, label: 'GENERAL INFORMATION', active: true },
+                    { n: 2, label: 'LOCATION', active: false },
+                    { n: 3, label: 'INVENTORY', active: false },
+                    { n: 4, label: 'FUEL CONSUMPTION', active: false },
+                  ].map(({ n, label, active }, i) => (
+                    <div key={n} className="flex items-start">
+                      <div className="flex flex-col items-center gap-1 min-w-[68px] sm:min-w-[80px]">
+                        <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-sm font-black transition-all ${
+                          active
+                            ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                            : 'border-slate-300 bg-white text-slate-400'
+                        }`}>
+                          {n}
+                        </div>
+                        <span className={`text-[9px] font-bold text-center leading-tight tracking-wide ${
+                          active ? 'text-emerald-600' : 'text-slate-400'
+                        }`}>{label}</span>
+                      </div>
+                      {i < 3 && (
+                        <div className="flex-1 h-px bg-slate-200 mt-[18px] mx-1 min-w-[16px] sm:min-w-[24px]" />
+                      )}
                     </div>
-                    <h4 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
-                      Zero-touch dispatch from depot to delivery
-                    </h4>
-                    <p className="text-xs sm:text-sm text-white/70 mt-2 leading-relaxed">
-                      Auto-computes required fuel from truck efficiency ratings, assigns available certified drivers, and generates audit manifests in under 2 seconds.
-                    </p>
+                  ))}
+                </div>
+
+                {/* Section header */}
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 mb-4 w-fit">
+                  <Clock className="w-3.5 h-3.5 text-slate-500" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Request Timeline &amp; Project</span>
+                </div>
+
+                {/* Form fields grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                  {/* DATE AND TIME OF REQUEST */}
+                  <div>
+                    <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
+                      Date and Time of Request <span className="text-red-500">*</span>
+                    </label>
+                    <div className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-500 font-mono select-none cursor-not-allowed">
+                      10 / 21 / 2026 , 02 : 17 &nbsp;PM
+                    </div>
                   </div>
 
-                  {/* Progress bar */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs font-semibold text-white/80">
-                      <span>Dispatch Progress</span>
-                      <span className="font-mono text-[11px]">{Math.min(dispatchStep + 1, 4)} / 4 Complete</span>
+                  {/* DEPARTURE DATE & TIME */}
+                  <div>
+                    <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
+                      Departure Date &amp; Time <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <div className="flex items-center gap-2 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 font-mono">
+                        <span>10 / 21 / 2026</span>
+                        <svg className="w-3.5 h-3.5 text-slate-400 ml-auto shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                      </div>
+                      <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2.5">
+                        <span className="text-xs text-slate-700 font-mono">02</span>
+                        <ChevronRight className="w-2.5 h-2.5 text-slate-300 rotate-90" />
+                      </div>
+                      <span className="text-slate-400 text-xs">:</span>
+                      <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2.5">
+                        <span className="text-xs text-slate-700 font-mono">45</span>
+                        <ChevronRight className="w-2.5 h-2.5 text-slate-300 rotate-90" />
+                      </div>
+                      <div className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-xs text-slate-700 font-semibold">
+                        PM
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {[0, 1, 2, 3].map((s) => (
-                        <div
-                          key={s}
-                          className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
-                            dispatchStep >= s ? 'bg-white' : 'bg-white/20'
-                          }`}
-                        />
+                    <div className="flex flex-wrap gap-1.5">
+                      {['Now', 'In 30m', 'In 1h', 'In 2h', 'In 4h'].map((t) => (
+                        <button key={t} className="px-2.5 py-1 rounded-md border border-slate-200 bg-white text-[10px] font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+                          {t}
+                        </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Action trigger button */}
+                  {/* PROJECT TAG */}
+                  <div className="md:col-span-2">
+                    <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
+                      Project Tag
+                    </label>
+                    <div className="flex items-center rounded-xl border border-slate-200 bg-white overflow-hidden">
+                      <span className="px-3 py-2.5 text-xs font-bold text-slate-400 border-r border-slate-200">#</span>
+                      <span className="px-3 py-2.5 text-xs text-slate-400">e.g. PRJ-2024-001</span>
+                    </div>
+                  </div>
+
+                  {/* PURPOSE OF TRAVEL */}
                   <div>
-                    <AnimatePresence mode="wait">
-                      {dispatchStep === 3 ? (
-                        <motion.div
-                          key="done"
-                          initial={{ opacity: 0, scale: 0.96, y: 6 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="w-full py-3 px-4 rounded-lg bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-black/20"
-                        >
-                          <Check className="w-4 h-4" /> Trip dispatched in 1.4 seconds
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="going"
-                          initial={{ opacity: 0, scale: 0.96, y: 6 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="w-full py-3 px-4 rounded-lg bg-white/15 border border-white/25 backdrop-blur-sm text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2"
-                        >
-                          <Sparkles className="w-3.5 h-3.5 animate-spin text-violet-200" /> Compiling dispatch telemetry...
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
+                      Purpose of Travel <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="w-full rounded-xl border border-slate-200 bg-white px-3 pt-2.5 pb-6 text-xs text-slate-400 min-h-[72px]">
+                        Describe the reason for this trip...
+                      </div>
+                      <span className="absolute bottom-2 right-3 text-[10px] text-slate-400">0 / 300</span>
+                    </div>
+                  </div>
+
+                  {/* NOTES */}
+                  <div>
+                    <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
+                      Notes
+                    </label>
+                    <div className="relative">
+                      <div className="w-full rounded-xl border border-slate-200 bg-white px-3 pt-2.5 pb-6 text-xs text-slate-400 min-h-[72px]">
+                        Notes...
+                      </div>
+                      <span className="absolute bottom-2 right-3 text-[10px] text-slate-400">0 / 300</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Right side: 3 Animated Wizard Step Cards */}
-                <div className="lg:col-span-7 space-y-2.5">
-                  {[
-                    { n: 1, label: 'Route', value: 'Manila North → Calamba', right: '68.4 km', rightCls: 'text-white/60 font-mono text-xs' },
-                    { n: 2, label: 'Fuel Forecast', value: '21.5 L · Auto-computed', right: 'Optimal', rightCls: 'text-xs font-bold text-emerald-300 bg-emerald-400/20 border border-emerald-300/25 px-2.5 py-0.5 rounded-md' },
-                    { n: 3, label: 'Assignment', value: 'Ramon S. · Truck #08', right: 'Confirmed', rightCls: 'text-[11px] text-white/45' },
-                  ].map(({ n, label, value, right, rightCls }) => (
-                    <motion.div
-                      key={n}
-                      animate={{ opacity: dispatchStep >= n - 1 ? 1 : 0.3, y: dispatchStep >= n - 1 ? 0 : 10 }}
-                      transition={{ duration: 0.35, ease: 'easeOut' }}
-                      className="flex items-center justify-between bg-white/12 backdrop-blur-md border border-white/20 rounded-xl px-4 sm:px-5 py-3 sm:py-3.5"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 transition-all duration-300 ${
-                            dispatchStep >= n - 1 ? 'bg-white text-indigo-700 shadow-md' : 'bg-white/15 text-white/40'
-                          }`}
-                        >
-                          {n}
-                        </div>
-                        <div>
-                          <div className="text-[10px] text-white/50 font-semibold uppercase tracking-wider mb-0.5">{label}</div>
-                          <div className="text-sm sm:text-base font-bold text-white leading-tight">{value}</div>
-                        </div>
-                      </div>
-                      <span className={rightCls}>{right}</span>
-                    </motion.div>
-                  ))}
+                {/* AUTHORIZED BY */}
+                <div className="mt-4 flex items-center justify-between px-3 py-2.5 rounded-xl border border-slate-200 bg-white">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20H7a2 2 0 01-2-2v-1a5 5 0 015-5h4a5 5 0 015 5v1a2 2 0 01-2 2z"/><circle cx="12" cy="8" r="4"/><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l1 1 3-3"/></svg>
+                    </div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700">Authorized By:</span>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border border-slate-200 bg-slate-50 text-slate-500">Required</span>
+                </div>
+
+                {/* REQUESTED BY */}
+                <div className="mt-4">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
+                    Requested By <span className="text-red-500">*</span>
+                  </label>
+                  <div className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-400">
+                    Requestor&apos;s Name
+                  </div>
                 </div>
               </div>
             </div>
