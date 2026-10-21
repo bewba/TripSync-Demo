@@ -212,12 +212,16 @@ const FEATURES: FeatureConfig[] = [
   },
 ];
 
-export default function LandingAnalyticsChart() {
+interface LandingAnalyticsChartProps {
+  compact?: boolean;
+}
+
+export default function LandingAnalyticsChart({ compact = false }: LandingAnalyticsChartProps = {}) {
   // Fuel Consumed as the default feature
   const [activeFeature, setActiveFeature] = useState<FeatureType>('fuel');
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(containerRef, { once: true, amount: 0.3 });
+  const isInView = useInView(containerRef, { once: true, amount: 0.2 });
 
   const currentFeature = FEATURES.find((f) => f.id === activeFeature) || FEATURES[0];
 
@@ -280,34 +284,64 @@ export default function LandingAnalyticsChart() {
   return (
     <div
       ref={containerRef}
-      className="w-full bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-6 text-slate-900 relative"
+      className={`w-full bg-white text-slate-900 relative ${
+        compact
+          ? 'rounded-none border-0 p-3 sm:p-3.5 flex flex-col justify-between flex-1'
+          : 'rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-6'
+      }`}
     >
       {/* Top Metric Header & Interactive Feature Switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4 sm:mb-6">
+      <div
+        className={`flex items-start justify-between gap-2 ${
+          compact ? 'mb-2' : 'flex-col sm:flex-row sm:items-start mb-4 sm:mb-6'
+        }`}
+      >
         <div className="min-w-0">
-          <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-slate-900 font-sans mb-1">
+          <p
+            className={`font-bold uppercase tracking-widest text-slate-900 font-sans ${
+              compact ? 'text-[9px] mb-0.5' : 'text-xs sm:text-sm mb-1'
+            }`}
+          >
             {currentFeature.metricTitle}
           </p>
-          <p className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight font-sans">
+          <p
+            className={`font-black text-slate-950 tracking-tight font-sans ${
+              compact ? 'text-lg sm:text-xl' : 'text-2xl sm:text-4xl'
+            }`}
+          >
             {currentFeature.totalValue}{' '}
-            <span className="text-sm sm:text-base font-semibold text-slate-400 font-sans ml-1">
+            <span
+              className={`font-semibold text-slate-400 font-sans ml-1 ${
+                compact ? 'text-[10px]' : 'text-sm sm:text-base'
+              }`}
+            >
               {currentFeature.unit} total
             </span>
           </p>
-          <p className="text-xs sm:text-sm text-slate-400 mt-0.5 font-sans">
+          <p
+            className={`text-slate-400 font-sans ${
+              compact ? 'text-[9px] mt-0' : 'text-xs sm:text-sm mt-0.5'
+            }`}
+          >
             across <span className="font-bold text-slate-700">15</span> trips
           </p>
         </div>
 
         {/* Feature Switcher Tabs - 2 tabs: Fuel Consumed & Distance Covered */}
-        <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200/70 w-full sm:w-[280px] shrink-0 self-start">
+        <div
+          className={`grid grid-cols-2 gap-1 p-0.5 sm:p-1 bg-slate-100 rounded-lg sm:rounded-xl border border-slate-200/70 shrink-0 self-start ${
+            compact ? 'w-[170px] sm:w-[190px]' : 'w-full sm:w-[280px]'
+          }`}
+        >
           {FEATURES.map((feat) => {
             const isActive = activeFeature === feat.id;
             return (
               <button
                 key={feat.id}
                 onClick={() => setActiveFeature(feat.id)}
-                className={`py-2 px-3 text-xs font-bold rounded-lg transition-all duration-150 cursor-pointer whitespace-nowrap text-center ${
+                className={`font-bold rounded-md sm:rounded-lg transition-all duration-150 cursor-pointer whitespace-nowrap text-center ${
+                  compact ? 'py-1 px-1.5 text-[9px] sm:text-[10px]' : 'py-2 px-3 text-xs'
+                } ${
                   isActive
                     ? feat.id === 'fuel'
                       ? 'bg-emerald-600 text-white shadow-xs'
@@ -473,7 +507,11 @@ export default function LandingAnalyticsChart() {
             - When hovered: Default popup is replaced by the hovered point's popup, dynamically positioned.
         */}
         <div
-          className={`absolute top-1 sm:top-2 z-20 bg-white/95 backdrop-blur-[2px] border border-slate-200/90 rounded-xl p-2.5 sm:p-3 shadow-lg text-[11px] sm:text-xs font-semibold text-slate-800 w-[180px] sm:w-[210px] pointer-events-none transition-all duration-150 ease-out ${
+          className={`absolute top-1 sm:top-2 z-20 bg-white/95 backdrop-blur-[2px] border border-slate-200/90 rounded-xl shadow-lg font-semibold text-slate-800 pointer-events-none transition-all duration-150 ease-out ${
+            compact
+              ? 'p-1.5 sm:p-2 text-[9px] sm:text-[10px] w-[140px] sm:w-[160px]'
+              : 'p-2.5 sm:p-3 text-[11px] sm:text-xs w-[180px] sm:w-[210px]'
+          } ${
             !isHovered ? 'right-1 sm:right-auto sm:left-[59%]' : ''
           }`}
           style={
@@ -490,13 +528,19 @@ export default function LandingAnalyticsChart() {
               : undefined
           }
         >
-          <p className="text-slate-400 font-bold mb-1.5 pb-1 border-b border-slate-100 text-[11px] sm:text-xs font-sans">
+          <p
+            className={`text-slate-400 font-bold border-b border-slate-100 font-sans ${
+              compact ? 'mb-1 pb-0.5 text-[9px] sm:text-[10px]' : 'mb-1.5 pb-1 text-[11px] sm:text-xs'
+            }`}
+          >
             {activePoint.date}
           </p>
-          <div className="flex flex-col gap-1 mb-1.5">
+          <div className={`flex flex-col font-sans ${compact ? 'gap-0.5 mb-1' : 'gap-1 mb-1.5'}`}>
             {/* Fuel Consumed */}
             <div
-              className={`flex justify-between items-center -mx-1 px-1.5 py-0.5 rounded text-[10.5px] sm:text-[11px] font-sans ${
+              className={`flex justify-between items-center -mx-1 px-1.5 py-0.5 rounded font-sans ${
+                compact ? 'text-[8.5px] sm:text-[9.5px]' : 'text-[10.5px] sm:text-[11px]'
+              } ${
                 activeFeature === 'fuel' ? 'bg-emerald-50 text-emerald-800 font-bold' : ''
               }`}
             >
@@ -507,7 +551,7 @@ export default function LandingAnalyticsChart() {
                     : 'text-slate-500 font-medium'
                 }
               >
-                Fuel Consumed:
+                Fuel:
               </span>
               <span
                 className={`font-bold ${
@@ -520,7 +564,9 @@ export default function LandingAnalyticsChart() {
 
             {/* Distance Covered */}
             <div
-              className={`flex justify-between items-center -mx-1 px-1.5 py-0.5 rounded text-[10.5px] sm:text-[11px] font-sans ${
+              className={`flex justify-between items-center -mx-1 px-1.5 py-0.5 rounded font-sans ${
+                compact ? 'text-[8.5px] sm:text-[9.5px]' : 'text-[10.5px] sm:text-[11px]'
+              } ${
                 activeFeature === 'distance' ? 'bg-blue-50 text-blue-800 font-bold' : ''
               }`}
             >
@@ -531,7 +577,7 @@ export default function LandingAnalyticsChart() {
                     : 'text-slate-500 font-medium'
                 }
               >
-                Distance Covered:
+                Distance:
               </span>
               <span
                 className={`font-bold ${
@@ -543,22 +589,38 @@ export default function LandingAnalyticsChart() {
             </div>
           </div>
 
-          <div className="pt-1.5 border-t border-slate-100 font-sans">
-            <span className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">
-              Vehicles Used
+          <div className="pt-1 border-t border-slate-100 font-sans">
+            <span
+              className={`text-slate-400 font-bold uppercase tracking-wider block ${
+                compact ? 'text-[8px] mb-0.5' : 'text-[9.5px] sm:text-[10px] mb-0.5'
+              }`}
+            >
+              Vehicle
             </span>
             <div className="flex flex-wrap gap-1">
-              <span className="bg-slate-100 text-slate-900 font-medium px-1.5 py-0.5 rounded text-[10px] sm:text-[10.5px] truncate max-w-full">
+              <span
+                className={`bg-slate-100 text-slate-900 font-medium px-1.5 py-0.5 rounded truncate max-w-full ${
+                  compact ? 'text-[8.5px] sm:text-[9px]' : 'text-[10px] sm:text-[10.5px]'
+                }`}
+              >
                 {activePoint.vehicle}
               </span>
             </div>
           </div>
-          <div className="mt-1 pt-1 border-t border-slate-100 font-sans">
-            <span className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">
-              Drivers
+          <div className="mt-0.5 pt-0.5 border-t border-slate-100 font-sans">
+            <span
+              className={`text-slate-400 font-bold uppercase tracking-wider block ${
+                compact ? 'text-[8px] mb-0.5' : 'text-[9.5px] sm:text-[10px] mb-0.5'
+              }`}
+            >
+              Driver
             </span>
             <div className="flex flex-wrap gap-1">
-              <span className="bg-slate-100 text-slate-900 font-medium px-1.5 py-0.5 rounded text-[10px] sm:text-[10.5px]">
+              <span
+                className={`bg-slate-100 text-slate-900 font-medium px-1.5 py-0.5 rounded ${
+                  compact ? 'text-[8.5px] sm:text-[9px]' : 'text-[10px] sm:text-[10.5px]'
+                }`}
+              >
                 {activePoint.driver}
               </span>
             </div>

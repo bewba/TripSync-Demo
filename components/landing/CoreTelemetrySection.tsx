@@ -16,6 +16,7 @@ const TrackDriversMiniMap = dynamic(
     ),
   }
 );
+import LandingAnalyticsChart from '@/components/landing/LandingAnalyticsChart';
 import {
   Maximize2,
   Navigation,
@@ -36,6 +37,7 @@ import {
   Printer,
   ChevronRight,
   Clock,
+  ArrowRight,
 } from 'lucide-react';
 
 export default function CoreTelemetrySection() {
@@ -78,6 +80,15 @@ export default function CoreTelemetrySection() {
   useEffect(() => {
     const t = setInterval(() => setFuelTick(n => n + 1), 1800);
     return () => clearInterval(t);
+  }, []);
+
+  // Driver app screen toggle: 0 = Assigned Trips, 1 = Trip Assigned, 2 = Trip in Progress
+  const [driverAppScreen, setDriverAppScreen] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDriverAppScreen((prev) => (prev + 1) % 3);
+    }, 4000);
+    return () => clearInterval(timer);
   }, []);
 
   // ─── Shared card styles ─────────────────────────────────────────────────────
@@ -234,7 +245,7 @@ export default function CoreTelemetrySection() {
 
           {/* ═══════════════════════════════════════════════════════════
               CARD 2 — TRACK FUEL (COMPACT: 5 COLS)
-              Embed: Analytics page chart chrome
+              Embed: Analytics page chart chrome matching Card 3
           ═══════════════════════════════════════════════════════════ */}
           <div className={`${CARD} md:col-span-12 lg:col-span-5`}>
             <div className="px-6 pt-5 pb-3 flex items-start justify-between gap-3">
@@ -248,83 +259,11 @@ export default function CoreTelemetrySection() {
             </div>
 
             {/* App window embed: Analytics page */}
-            <div className="mx-4 mb-4 rounded-lg overflow-hidden border border-slate-200 shadow-2xs flex flex-col flex-1">
+            <div className="mx-4 mb-4 rounded-lg overflow-hidden border border-slate-200 shadow-2xs flex flex-col flex-1 bg-white">
               <AppHeader title="Fleet Analytics" subtitle="Fuel consumed, distance, and efficiency metrics." badge="Live Data" badgeColor="emerald" />
 
-              <div className="bg-slate-50 p-3 space-y-2.5 flex-1 flex flex-col justify-between">
-                {/* Stat pills row */}
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { label: 'Fuel Consumed', val: '486L', color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
-                    { label: 'Distance', val: '1,345km', color: 'text-blue-700 bg-blue-50 border-blue-200' },
-                    { label: 'Requested', val: '524L', color: 'text-teal-700 bg-teal-50 border-teal-200' },
-                  ].map(s => (
-                    <div key={s.label} className={`rounded-md p-1.5 border text-center ${s.color}`}>
-                      <div className="text-[9px] font-semibold uppercase tracking-wider opacity-70">{s.label}</div>
-                      <div className="text-xs font-black mt-0.5">{s.val}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Chart area — animated fuel line */}
-                <div className="bg-white rounded-lg border border-slate-200 p-2.5 shadow-2xs flex-1 flex flex-col justify-between">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-slate-700 flex items-center gap-1">
-                      <BarChart3 className="w-3 h-3 text-emerald-600"/>Fuel Consumed (Last 7 days)
-                    </span>
-                    <span className="text-[9px] text-slate-400">Oct 10–16</span>
-                  </div>
-                  <div className="relative h-[88px] w-full">
-                    <svg className="w-full h-full overflow-visible" viewBox="0 0 280 80" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="cFuelFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#10b981" stopOpacity="0.25"/>
-                          <stop offset="100%" stopColor="#10b981" stopOpacity="0"/>
-                        </linearGradient>
-                        <linearGradient id="cFuelLine" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stopColor="#3b82f6"/>
-                          <stop offset="100%" stopColor="#10b981"/>
-                        </linearGradient>
-                      </defs>
-                      {/* Grid */}
-                      {[20, 45, 65].map(y => (
-                        <line key={y} x1="0" y1={y} x2="280" y2={y} stroke="#f1f5f9" strokeWidth="1"/>
-                      ))}
-                      {/* Fill */}
-                      <motion.path
-                        d="M 0 55 C 40 40, 70 65, 120 42 C 155 22, 185 58, 230 35 C 255 22, 270 30, 280 28 L 280 80 L 0 80 Z"
-                        fill="url(#cFuelFill)"
-                        animate={{ d: [
-                          'M 0 55 C 40 40, 70 65, 120 42 C 155 22, 185 58, 230 35 C 255 22, 270 30, 280 28 L 280 80 L 0 80 Z',
-                          'M 0 48 C 40 62, 70 38, 120 50 C 155 40, 185 35, 230 42 C 255 30, 270 45, 280 38 L 280 80 L 0 80 Z',
-                          'M 0 55 C 40 40, 70 65, 120 42 C 155 22, 185 58, 230 35 C 255 22, 270 30, 280 28 L 280 80 L 0 80 Z',
-                        ]}}
-                        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                      />
-                      {/* Stroke */}
-                      <motion.path
-                        d="M 0 55 C 40 40, 70 65, 120 42 C 155 22, 185 58, 230 35 C 255 22, 270 30, 280 28"
-                        fill="none" stroke="url(#cFuelLine)" strokeWidth="2.5" strokeLinecap="round"
-                        animate={{ d: [
-                          'M 0 55 C 40 40, 70 65, 120 42 C 155 22, 185 58, 230 35 C 255 22, 270 30, 280 28',
-                          'M 0 48 C 40 62, 70 38, 120 50 C 155 40, 185 35, 230 42 C 255 30, 270 45, 280 38',
-                          'M 0 55 C 40 40, 70 65, 120 42 C 155 22, 185 58, 230 35 C 255 22, 270 30, 280 28',
-                        ]}}
-                        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                      />
-                      <motion.circle cx="230" cy="35" r="4" fill="#10b981" stroke="#fff" strokeWidth="2"
-                        animate={{ cy: [35, 42, 35] }}
-                        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                      />
-                    </svg>
-                  </div>
-                  {/* X-axis labels */}
-                  <div className="flex justify-between text-[8px] text-slate-400 mt-1 px-0.5">
-                    {['Oct 10','Oct 11','Oct 12','Oct 13','Oct 14','Oct 15','Oct 16'].map(d => (
-                      <span key={d}>{d}</span>
-                    ))}
-                  </div>
-                </div>
+              <div className="flex-1 flex flex-col bg-slate-50">
+                <LandingAnalyticsChart compact />
               </div>
             </div>
           </div>
@@ -332,7 +271,7 @@ export default function CoreTelemetrySection() {
 
           {/* ═══════════════════════════════════════════════════════════
               CARD 4 — TRIP HISTORY (MEDIUM-WIDE: 5 COLS)
-              Embed: Trip History page table chrome
+              Embed: Authentic Trip History page table chrome
           ═══════════════════════════════════════════════════════════ */}
           <div className={`${CARD} md:col-span-6 lg:col-span-5`}>
             <div className="px-6 pt-5 pb-3 flex items-start justify-between gap-3">
@@ -346,47 +285,167 @@ export default function CoreTelemetrySection() {
             </div>
 
             {/* App window embed: Trip History page */}
-            <div className="mx-4 mb-4 rounded-lg overflow-hidden border border-slate-200 shadow-2xs flex flex-col flex-1">
+            <div className="mx-4 mb-4 rounded-xl overflow-hidden border border-slate-200/90 shadow-sm flex flex-col flex-1 bg-white">
               {/* Page header */}
-              <div className="bg-white border-b border-slate-200 px-3.5 py-2.5">
-                <div className="text-[9px] text-blue-600 font-bold uppercase tracking-widest">Operational Records</div>
-                <div className="text-sm font-black text-slate-900 tracking-tight">Trip History</div>
+              <div className="bg-white px-3.5 pt-3 pb-2 flex items-center justify-between">
+                <div>
+                  <div className="text-[9px] text-emerald-700 font-bold uppercase tracking-widest font-sans">
+                    OPERATIONAL RECORDS
+                  </div>
+                  <div className="text-sm font-black text-slate-950 tracking-tight font-sans">
+                    Trip History
+                  </div>
+                </div>
+                {/* Generate Trip Report Button */}
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-900 text-white font-bold text-[9px] uppercase tracking-wider shrink-0 shadow-xs">
+                  <Download className="w-2.5 h-2.5" />
+                  <span className="hidden sm:inline">GENERATE TRIP REPORT</span>
+                  <span className="sm:hidden">REPORT</span>
+                  <ChevronRight className="w-2.5 h-2.5 opacity-60 rotate-90" />
+                </div>
               </div>
 
-              {/* Filter bar */}
-              <div className="bg-slate-50 px-3 py-2 flex items-center gap-2 border-b border-slate-200">
-                <div className="flex-1 flex items-center gap-1.5 bg-[#dce9ff] rounded-md px-2.5 py-1.5 min-w-0">
-                  <Search className="w-3 h-3 text-slate-400 shrink-0"/>
-                  <span className="text-[10px] text-slate-400 font-bold truncate">Search Vehicle or Location...</span>
+              {/* Action Bar: Search input + Pill status filters */}
+              <div className="bg-white px-3.5 pb-2.5 flex items-center gap-1.5 border-b border-slate-100 overflow-x-auto scrollbar-hide">
+                {/* Search input with rounded-2xl & light blue bg */}
+                <div className="flex items-center gap-1.5 bg-[#e8f0fe] rounded-xl px-2.5 py-1 min-w-[130px] shrink-0">
+                  <Search className="w-3 h-3 text-slate-400 shrink-0" />
+                  <span className="text-[9px] text-slate-500 font-medium truncate">
+                    Search Vehicle or Location...
+                  </span>
                 </div>
-                <div className="flex gap-1 shrink-0">
-                  <div className="px-2 py-1 rounded-md bg-blue-600 text-white text-[9px] font-bold">All</div>
-                  <div className="px-2 py-1 rounded-md bg-[#dce9ff] text-slate-500 text-[9px] font-bold">Flagged</div>
-                  <div className="px-2 py-1 rounded-md bg-[#dce9ff] text-slate-500 text-[9px] font-bold hidden sm:inline">Completed</div>
+
+                {/* Filter pills matching the actual screenshot */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className="px-2.5 py-1 rounded-xl bg-blue-600 text-white text-[9px] font-bold uppercase tracking-wider shadow-xs">
+                    ALL
+                  </span>
+                  <span className="px-2 py-1 rounded-xl bg-[#e8f0fe] text-slate-600 text-[9px] font-semibold uppercase tracking-wider">
+                    ASSIGNED
+                  </span>
+                  <span className="px-2 py-1 rounded-xl bg-[#e8f0fe] text-slate-600 text-[9px] font-semibold uppercase tracking-wider hidden sm:inline">
+                    TRIP IN PROGRESS
+                  </span>
+                  <span className="px-2 py-1 rounded-xl bg-[#e8f0fe] text-slate-600 text-[9px] font-semibold uppercase tracking-wider">
+                    COMPLETED
+                  </span>
                 </div>
               </div>
 
-              {/* Table rows matching TripRow component style */}
-              <div className="bg-white divide-y divide-slate-100 flex-1">
+              {/* Real table rows matching the screenshot layout & typography */}
+              <div className="bg-white divide-y divide-slate-100 flex-1 overflow-hidden">
                 {[
-                  { id: 'TRP-0041', route: 'Manila → Calamba', date: 'Oct 16', fuel: '21.5L', km: '68km', status: 'Completed', flagged: false },
-                  { id: 'TRP-0040', route: 'BGC → Batangas', date: 'Oct 15', fuel: '32.4L', km: '108km', status: 'Completed', flagged: false },
-                  { id: 'TRP-0039', route: 'Manila → Tarlac', date: 'Oct 14', fuel: '48.1L', km: '154km', status: 'Flagged', flagged: true },
-                  { id: 'TRP-0038', route: 'Cavite → Laguna', date: 'Oct 13', fuel: '18.9L', km: '55km', status: 'Completed', flagged: false },
-                ].map(row => (
-                  <div key={row.id} className="px-3.5 py-2.5 flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${row.flagged ? 'bg-rose-500' : 'bg-emerald-500'}`}/>
-                      <div className="min-w-0">
-                        <div className="text-[10px] font-bold text-slate-900 truncate">{row.route}</div>
-                        <div className="text-[9px] text-slate-400 truncate">{row.id} · {row.date} · {row.km} · {row.fuel}</div>
+                  {
+                    routeFrom: 'LivanTrade Pa...',
+                    routeTo: 'SMC , Bulaca...',
+                    truck: 'BOOMTRUCK',
+                    status: 'Completed',
+                    metrics: '196.48 Km',
+                    requested: 'Oct 19, 2026',
+                    scheduled: 'Oct 19, 2026 • 11:35 PM',
+                  },
+                  {
+                    routeFrom: 'LivanTrade Pa...',
+                    routeTo: 'SMC , Bulaca...',
+                    truck: 'BOOMTRUCK',
+                    status: 'Completed',
+                    metrics: '196.48 Km',
+                    requested: 'Oct 19, 2026',
+                    scheduled: 'Oct 19, 2026 • 10:30 PM',
+                  },
+                  {
+                    routeFrom: 'LivanTrade Pa...',
+                    routeTo: 'bgc',
+                    truck: 'BOOMTRUCK',
+                    status: 'Completed',
+                    metrics: '147.24 Km',
+                    requested: 'Oct 19, 2026',
+                    scheduled: 'Oct 19, 2026 • 09:50 PM',
+                  },
+                  {
+                    routeFrom: 'LivanTrade Pa...',
+                    routeTo: 'SMC , Bulaca...',
+                    truck: 'BOOMTRUCK',
+                    status: 'Completed',
+                    metrics: '196.48 Km',
+                    requested: 'Oct 19, 2026',
+                    scheduled: 'Oct 19, 2026 • 09:45 PM',
+                  },
+                  {
+                    routeFrom: 'LivanTrade Pa...',
+                    routeTo: 'bgc',
+                    truck: 'BOOMTRUCK',
+                    status: 'Completed',
+                    metrics: '153.22 Km',
+                    requested: 'Oct 18, 2026',
+                    scheduled: 'Oct 18, 2026 • 10:20 AM',
+                  },
+                ].map((row, idx) => (
+                  <div
+                    key={idx}
+                    className="px-3.5 py-2 flex items-center justify-between hover:bg-slate-50/80 transition-colors cursor-pointer text-left"
+                  >
+                    {/* Left: Route, Truck, Status, Metrics columns */}
+                    <div className="grid grid-cols-4 gap-2 sm:gap-3 flex-1 min-w-0 pr-2">
+                      {/* ROUTE */}
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[7.5px] text-slate-400 uppercase font-bold tracking-wider">
+                          ROUTE
+                        </span>
+                        <div className="flex items-center gap-1 font-bold text-slate-900 text-[9.5px] truncate mt-0.5">
+                          <span className="truncate">{row.routeFrom}</span>
+                          <span className="text-slate-400 font-normal shrink-0">→</span>
+                          <span className="truncate">{row.routeTo}</span>
+                        </div>
+                      </div>
+
+                      {/* TRUCK */}
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[7.5px] text-slate-400 uppercase font-bold tracking-wider">
+                          TRUCK
+                        </span>
+                        <span className="font-bold text-slate-900 text-[9.5px] truncate mt-0.5">
+                          {row.truck}
+                        </span>
+                      </div>
+
+                      {/* STATUS */}
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[7.5px] text-slate-400 uppercase font-bold tracking-wider">
+                          STATUS
+                        </span>
+                        <div className="mt-0.5">
+                          <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8px] font-semibold bg-emerald-100 text-emerald-800">
+                            {row.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* METRICS */}
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[7.5px] text-slate-400 uppercase font-bold tracking-wider">
+                          METRICS
+                        </span>
+                        <span className="font-semibold text-slate-900 text-[9.5px] truncate mt-0.5">
+                          {row.metrics}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${row.flagged ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
-                        {row.flagged ? '⚑ Flagged' : '✓ Clean'}
+
+                    {/* Right: REQUESTED & SCHEDULED dates */}
+                    <div className="text-right shrink-0 flex flex-col items-end">
+                      <span className="text-[7px] text-slate-400 uppercase font-bold tracking-wider">
+                        REQUESTED
                       </span>
-                      <ChevronRight className="w-3 h-3 text-slate-300"/>
+                      <span className="text-[8.5px] font-semibold text-slate-700 leading-tight">
+                        {row.requested}
+                      </span>
+                      <span className="text-[7px] text-blue-600 uppercase font-bold tracking-wider mt-0.5">
+                        SCHEDULED
+                      </span>
+                      <span className="text-[8px] font-bold text-blue-600 leading-tight">
+                        {row.scheduled}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -397,7 +456,7 @@ export default function CoreTelemetrySection() {
 
           {/* ═══════════════════════════════════════════════════════════
               CARD 6 — DRIVER APP (COMPACT PORTRAIT: 3 COLS)
-              Embed: Smartphone frame with active driver trip UI
+              Embed: Smartphone frame with authentic driver app UI
           ═══════════════════════════════════════════════════════════ */}
           <div className={`${CARD} md:col-span-6 lg:col-span-3`}>
             <div className="px-6 pt-5 pb-3 flex items-start justify-between gap-3">
@@ -410,64 +469,282 @@ export default function CoreTelemetrySection() {
               </Link>
             </div>
 
-            {/* App embed: smartphone mockup with actual TripSync Driver UI */}
-            <div className="mx-4 mb-4 flex items-center justify-center py-2 flex-1">
-              {/* Device frame with smaller modern rounding */}
-              <div className="w-[190px] bg-slate-950 rounded-2xl p-[6px] border border-slate-800 shadow-xl">
-                {/* Notch */}
-                <div className="w-12 h-1 bg-slate-800 rounded-full mx-auto mb-1.5"/>
+            {/* App embed: smartphone mockup with authentic Driver App UI */}
+            <div className="mx-4 mb-4 flex flex-col items-center justify-center py-1 flex-1">
+              {/* Screen Selector Pills */}
+              <div className="flex items-center gap-1 mb-2 bg-slate-100 p-0.5 rounded-lg border border-slate-200/80">
+                {[
+                  { label: 'Assigned', idx: 0 },
+                  { label: 'Details', idx: 1 },
+                  { label: 'Active', idx: 2 },
+                ].map((s) => (
+                  <button
+                    key={s.idx}
+                    onClick={() => setDriverAppScreen(s.idx)}
+                    className={`px-2 py-0.5 text-[8.5px] font-bold rounded-md transition-all cursor-pointer ${
+                      driverAppScreen === s.idx
+                        ? 'bg-white text-slate-900 shadow-2xs'
+                        : 'text-slate-400 hover:text-slate-700'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
 
-                {/* Screen */}
-                <div className="bg-[#f8f9ff] rounded-xl overflow-hidden border border-slate-800/50">
-                  {/* Status bar */}
-                  <div className="bg-emerald-700 px-2.5 py-1.5 flex items-center justify-between">
-                    <span className="text-white font-extrabold text-[9px] tracking-tight flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"/>Fleet Manager
-                    </span>
-                    <span className="text-white/70 text-[8px] font-mono">4G · 92%</span>
-                  </div>
+              {/* Smartphone Frame */}
+              <div className="w-[210px] bg-slate-950 rounded-[28px] p-[6px] border border-slate-800 shadow-2xl relative">
+                {/* Dynamic Island / Speaker Pill */}
+                <div className="w-14 h-3 bg-slate-900 rounded-full mx-auto mb-1 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-slate-950/80 mr-2" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-950/60" />
+                </div>
 
-                  {/* Page heading */}
-                  <div className="px-2.5 pt-2 pb-1">
-                    <div className="text-[8px] text-blue-600 font-bold uppercase tracking-widest">Active Trip</div>
-                    <div className="text-xs font-black text-slate-900 tracking-tight leading-tight">#TR-8840</div>
-                  </div>
+                {/* Smartphone Display */}
+                <div className="bg-[#f6f8fc] rounded-[22px] overflow-hidden border border-slate-800/40 min-h-[355px] max-h-[355px] flex flex-col select-none relative">
+                  <AnimatePresence mode="wait">
+                    {/* ─────────────────────────────────────────────────────────────
+                        SCREEN 0: ASSIGNED TRIPS (Screenshot 1)
+                    ───────────────────────────────────────────────────────────── */}
+                    {driverAppScreen === 0 && (
+                      <motion.div
+                        key="screen-0"
+                        initial={{ opacity: 0, x: 8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -8 }}
+                        transition={{ duration: 0.2 }}
+                        className="p-3 flex flex-col flex-1"
+                      >
+                        <h4 className="text-base font-extrabold text-slate-900 tracking-tight mb-2.5">
+                          Assigned Trips
+                        </h4>
 
-                  {/* Trip card */}
-                  <div className="mx-2.5 mb-2 bg-white rounded-lg border border-slate-200 p-2 shadow-2xs">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-2.5 h-2.5 text-emerald-600 shrink-0"/>
-                        <span className="text-[9px] font-bold text-slate-900">Manila → Batangas</span>
-                      </div>
-                      <span className="text-[8px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-full">On Time</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-1 text-center">
-                      <div className="bg-slate-50 rounded p-1 border border-slate-100">
-                        <div className="text-[8px] text-slate-400">Speed</div>
-                        <div className="text-[10px] font-black text-slate-900">64 km/h</div>
-                      </div>
-                      <div className="bg-slate-50 rounded p-1 border border-slate-100">
-                        <div className="text-[8px] text-slate-400">ETA</div>
-                        <div className="text-[10px] font-black text-slate-900">1h 12m</div>
-                      </div>
-                      <div className="bg-emerald-50 rounded p-1 border border-emerald-100">
-                        <div className="text-[8px] text-emerald-600">Fuel</div>
-                        <div className="text-[10px] font-black text-emerald-900">84L</div>
-                      </div>
-                    </div>
-                  </div>
+                        {/* Next Up Card */}
+                        <div className="bg-white rounded-2xl border-2 border-sky-300/80 p-2.5 shadow-sm space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="px-2 py-0.5 rounded-md bg-[#e0f2fe] text-[#0284c7] font-bold text-[8.5px] tracking-wider uppercase">
+                              NEXT UP
+                            </span>
+                            <ChevronRight className="w-3.5 h-3.5 text-sky-500" />
+                          </div>
 
-                  {/* Waypoint pill */}
-                  <div className="mx-2.5 mb-2 flex items-center gap-1 text-[8px] text-slate-500 bg-white border border-slate-200 rounded-md px-2 py-1 truncate">
-                    <Navigation className="w-2.5 h-2.5 text-blue-500 shrink-0"/>
-                    <span className="truncate">SLEX Toll (12 km)</span>
-                  </div>
+                          {/* Route timeline */}
+                          <div className="relative pl-4 space-y-2.5 py-0.5">
+                            {/* Connector line */}
+                            <div className="absolute left-[5px] top-[7px] bottom-[7px] w-[1.5px] bg-slate-200" />
 
-                  {/* Action button */}
-                  <div className="mx-2.5 mb-2.5 py-1.5 bg-emerald-600 rounded-md text-center text-[9px] font-bold text-white shadow-2xs">
-                    Log Fuel Receipt (Scan)
-                  </div>
+                            {/* Origin */}
+                            <div className="relative flex items-start gap-1.5">
+                              <span className="absolute -left-4 top-[3px] w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-100" />
+                              <span className="text-[10px] font-bold text-slate-800 leading-tight">
+                                SMC , Bulacan, Philippines
+                              </span>
+                            </div>
+
+                            {/* Destination */}
+                            <div className="relative flex items-start gap-1.5">
+                              <MapPin className="absolute -left-[18px] top-[1px] w-3 h-3 text-rose-500 fill-rose-500" />
+                              <span className="text-[10px] font-bold text-slate-800 leading-tight truncate">
+                                Golden Gate Memorial Park, San Roqu...
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Time & Distance badges */}
+                          <div className="flex items-center gap-1.5 pt-0.5">
+                            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#e0f2fe] text-[#0284c7] font-semibold text-[8.5px]">
+                              <Clock className="w-2.5 h-2.5 text-[#0284c7]" />
+                              <span>Today, 2:20 PM</span>
+                            </div>
+                            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#f3e8ff] text-[#9333ea] font-bold text-[8.5px]">
+                              <span>🔀 35.1 km</span>
+                            </div>
+                          </div>
+
+                          {/* Truck badge */}
+                          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#ccfbf1] text-[#0f766e] font-bold text-[8.5px]">
+                            <Truck className="w-2.5 h-2.5 text-[#0f766e]" />
+                            <span>BOOMTRUCK · ABK 9352</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* ─────────────────────────────────────────────────────────────
+                        SCREEN 1: TRIP ASSIGNED (Screenshot 2)
+                    ───────────────────────────────────────────────────────────── */}
+                    {driverAppScreen === 1 && (
+                      <motion.div
+                        key="screen-1"
+                        initial={{ opacity: 0, x: 8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -8 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex flex-col flex-1"
+                      >
+                        {/* Top App Bar */}
+                        <div className="bg-white border-b border-slate-100 px-3 py-2">
+                          <h4 className="text-xs font-bold text-slate-900 tracking-tight">
+                            Trip Assigned
+                          </h4>
+                        </div>
+
+                        <div className="p-2.5 space-y-2 overflow-y-auto max-h-[305px] flex-1">
+                          {/* Trip Assigned To You Badge */}
+                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border border-emerald-400 bg-white text-emerald-700 text-[8.5px] font-bold">
+                            <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                            <span>Trip Assigned to You</span>
+                          </div>
+
+                          {/* Route Section */}
+                          <div>
+                            <span className="text-[9.5px] font-extrabold text-slate-900 block mb-1">
+                              Route
+                            </span>
+                            <div className="bg-white rounded-xl border border-slate-200/90 p-2 space-y-2 relative">
+                              <div className="absolute left-[13px] top-[14px] bottom-[16px] w-[1.5px] bg-slate-200" />
+
+                              {/* Pickup */}
+                              <div className="flex items-start gap-2 relative">
+                                <span className="w-3 h-3 rounded-full border-2 border-blue-600 bg-white flex items-center justify-center shrink-0 mt-0.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                                </span>
+                                <div>
+                                  <div className="text-[7.5px] font-bold text-slate-400 uppercase">
+                                    Pickup
+                                  </div>
+                                  <div className="text-[9px] font-bold text-slate-800 leading-tight">
+                                    SMC , Bulacan, Philippines
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Dropoff */}
+                              <div className="flex items-start gap-2 relative">
+                                <MapPin className="w-3 h-3 text-rose-500 fill-rose-500 shrink-0 mt-0.5" />
+                                <div>
+                                  <div className="text-[7.5px] font-bold text-slate-400 uppercase">
+                                    Dropoff
+                                  </div>
+                                  <div className="text-[8.5px] font-bold text-slate-800 leading-tight">
+                                    Golden Gate Memorial Park, Baliwag, Bulacan
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Truck Details */}
+                          <div>
+                            <span className="text-[9.5px] font-extrabold text-slate-900 block mb-1">
+                              Truck Details
+                            </span>
+                            <div className="bg-white rounded-xl border border-slate-200/90 p-2 flex items-center gap-2">
+                              <Truck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                              <div>
+                                <div className="text-[7.5px] font-bold text-slate-400 uppercase">
+                                  Truck ID
+                                </div>
+                                <div className="text-[9.5px] font-bold text-slate-800 leading-tight">
+                                  BT1
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Tagalog Consent / Terms Notice */}
+                          <div className="rounded-xl bg-[#e0f2fe]/70 border border-sky-200 p-1.5 text-[7px] text-sky-950 leading-snug">
+                            <div className="flex items-start gap-1">
+                              <span className="w-2.5 h-2.5 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center shrink-0 text-[6.5px]">
+                                i
+                              </span>
+                              <span>
+                                Sa pag-swipe at pagtanggap ng trip na ito, ikaw ay sumasang-ayon na susubaybayan ng TripSync ang iyong GPS lokasyon...
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Swipe to Accept CTA button */}
+                          <div className="rounded-full bg-[#dcfce7] border border-emerald-300 p-0.5 flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                              <ArrowRight className="w-2.5 h-2.5" />
+                            </div>
+                            <span className="text-[8px] font-bold text-emerald-800 truncate">
+                              Swipe to Accept &amp; Start Leg 1
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* ─────────────────────────────────────────────────────────────
+                        SCREEN 2: TRIP IN PROGRESS (Screenshot 3)
+                    ───────────────────────────────────────────────────────────── */}
+                    {driverAppScreen === 2 && (
+                      <motion.div
+                        key="screen-2"
+                        initial={{ opacity: 0, x: 8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -8 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex flex-col flex-1"
+                      >
+                        {/* Top App Bar */}
+                        <div className="bg-white border-b border-slate-100 px-3 py-2">
+                          <h4 className="text-xs font-bold text-slate-900 tracking-tight">
+                            Trip in Progress
+                          </h4>
+                        </div>
+
+                        <div className="p-3 flex flex-col justify-between flex-1 text-center">
+                          {/* Elapsed Timer */}
+                          <div className="pt-2">
+                            <div className="text-3xl font-black text-slate-900 font-mono tracking-tight">
+                              00:02
+                            </div>
+                            <div className="text-[8px] font-extrabold tracking-widest text-slate-400 uppercase mt-0.5">
+                              LEG 1 TIME
+                            </div>
+                          </div>
+
+                          {/* System Running status */}
+                          <div className="py-2">
+                            <div className="text-sm font-extrabold text-slate-900">
+                              System Running
+                            </div>
+                            <div className="text-[8.5px] text-slate-500 mt-0.5 leading-snug px-1">
+                              Moving to: Golden Gate Memorial Park, Baliwag, Bulacan
+                            </div>
+                          </div>
+
+                          {/* Next Stop Card */}
+                          <div className="bg-white rounded-xl border border-slate-200/90 p-2 text-left flex items-start gap-2 shadow-2xs">
+                            <div className="w-4 h-4 text-blue-600 shrink-0 mt-0.5">
+                              <MapPin className="w-3.5 h-3.5" />
+                            </div>
+                            <div>
+                              <div className="text-[7.5px] font-bold text-slate-400 uppercase tracking-wider">
+                                NEXT STOP
+                              </div>
+                              <div className="text-[8.5px] font-bold text-slate-800 leading-tight mt-0.5">
+                                Golden Gate Memorial Park, Baliwag, Bulacan
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Swipe to Finish Trip Button */}
+                          <div className="rounded-full bg-[#e0f2fe] border border-sky-300 p-0.5 flex items-center gap-1.5 mt-2">
+                            <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                              <ArrowRight className="w-2.5 h-2.5" />
+                            </div>
+                            <span className="text-[8.5px] font-bold text-blue-800 truncate">
+                              Swipe to Finish Trip
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </div>
