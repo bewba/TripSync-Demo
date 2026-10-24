@@ -901,17 +901,17 @@ export default function CoreTelemetrySection() {
 
           {/* ═══════════════════════════════════════════════════════════
               CARD 3 — DISPATCH TRIPS IN SECONDS (FULL-WIDTH HERO: 12 COLS)
-              Plan Trip page mockup matching the real /auth/plan-trip UI
+              Stripe-style grand showcase banner + interactive wizard steps
           ═══════════════════════════════════════════════════════════ */}
           <div className="group bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden md:col-span-12 lg:col-span-12">
             {/* Title row */}
-            <div className="px-6 pt-5 pb-3 flex items-start justify-between gap-3">
+            <div className="px-6 sm:px-8 pt-5 sm:pt-6 pb-3 flex items-start justify-between gap-3 bg-white">
               <div>
                 <h3 className="text-lg sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
                   Dispatch trips in seconds
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                  Configure logistical routes with real-time precision.
+                  Automated route planning, fuel forecasting, and instant driver dispatch.
                 </p>
               </div>
               <Link href="/auth/plan-trip" aria-label="Open Plan Trip" className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors shrink-0">
@@ -919,165 +919,105 @@ export default function CoreTelemetrySection() {
               </Link>
             </div>
 
-            {/* App window embed */}
-            <div className="mx-4 mb-4 rounded-xl overflow-hidden border border-slate-200/90 shadow-sm bg-white">
-              {/* Window chrome bar */}
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border-b border-slate-200">
-                <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-400"/>
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-400"/>
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"/>
-                </div>
-                <div className="flex-1 flex items-center justify-center gap-1.5">
-                  <Navigation className="w-3 h-3 text-slate-400" />
-                  <span className="text-[11px] text-slate-400 font-medium">New Dispatch · Plan Trip</span>
-                </div>
-              </div>
+            {/* Full-bleed gradient body */}
+            <div className="relative flex-1 min-h-[260px] bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 overflow-hidden p-6 sm:p-8">
+              <div className="absolute -top-24 -right-20 w-80 h-80 rounded-full bg-violet-300/20 blur-3xl pointer-events-none"/>
+              <div className="absolute -bottom-16 -left-16 w-72 h-72 rounded-full bg-indigo-300/15 blur-3xl pointer-events-none"/>
+              <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '18px 18px' }}/>
 
-              {/* Page content */}
-              <div className="bg-white px-5 py-5">
-                {/* Page header */}
-                <div className="text-center mb-5">
-                  <p className="text-[10px] font-bold tracking-widest text-emerald-600 uppercase mb-1">New Dispatch</p>
-                  <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Plan Trip</h2>
-                  <p className="text-xs text-slate-400 mt-1">Configure logistical routes with real-time precision.</p>
-                </div>
-
-                {/* 4-step stepper */}
-                <div className="flex items-start justify-center gap-0 mb-6 overflow-x-auto">
-                  {[
-                    { n: 1, label: 'GENERAL INFORMATION', active: true },
-                    { n: 2, label: 'LOCATION', active: false },
-                    { n: 3, label: 'INVENTORY', active: false },
-                    { n: 4, label: 'FUEL CONSUMPTION', active: false },
-                  ].map(({ n, label, active }, i) => (
-                    <div key={n} className="flex items-start">
-                      <div className="flex flex-col items-center gap-1 min-w-[68px] sm:min-w-[80px]">
-                        <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-sm font-black transition-all ${
-                          active
-                            ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                            : 'border-slate-300 bg-white text-slate-400'
-                        }`}>
-                          {n}
-                        </div>
-                        <span className={`text-[9px] font-bold text-center leading-tight tracking-wide ${
-                          active ? 'text-emerald-600' : 'text-slate-400'
-                        }`}>{label}</span>
-                      </div>
-                      {i < 3 && (
-                        <div className="flex-1 h-px bg-slate-200 mt-[18px] mx-1 min-w-[16px] sm:min-w-[24px]" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Section header */}
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 mb-4 w-fit">
-                  <Clock className="w-3.5 h-3.5 text-slate-500" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Request Timeline &amp; Project</span>
-                </div>
-
-                {/* Form fields grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                  {/* DATE AND TIME OF REQUEST */}
+              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
+                {/* Left side: Wizard status, progress bar & compilation CTA */}
+                <div className="lg:col-span-5 flex flex-col justify-between space-y-5">
                   <div>
-                    <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
-                      Date and Time of Request <span className="text-red-500">*</span>
-                    </label>
-                    <div className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-500 font-mono select-none cursor-not-allowed">
-                      10 / 21 / 2026 , 02 : 17 &nbsp;PM
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 border border-white/20 text-white text-xs font-semibold mb-3">
+                      <Sparkles className="w-3.5 h-3.5 text-violet-200" />
+                      4-Step Automated Dispatch Wizard
                     </div>
+                    <h4 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
+                      Zero-touch dispatch from depot to delivery
+                    </h4>
+                    <p className="text-xs sm:text-sm text-white/70 mt-2 leading-relaxed">
+                      Auto-computes required fuel from truck efficiency ratings, assigns available certified drivers, and generates audit manifests in under 2 seconds.
+                    </p>
                   </div>
 
-                  {/* DEPARTURE DATE & TIME */}
-                  <div>
-                    <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
-                      Departure Date &amp; Time <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <div className="flex items-center gap-2 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 font-mono">
-                        <span>10 / 21 / 2026</span>
-                        <svg className="w-3.5 h-3.5 text-slate-400 ml-auto shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                      </div>
-                      <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2.5">
-                        <span className="text-xs text-slate-700 font-mono">02</span>
-                        <ChevronRight className="w-2.5 h-2.5 text-slate-300 rotate-90" />
-                      </div>
-                      <span className="text-slate-400 text-xs">:</span>
-                      <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2.5">
-                        <span className="text-xs text-slate-700 font-mono">45</span>
-                        <ChevronRight className="w-2.5 h-2.5 text-slate-300 rotate-90" />
-                      </div>
-                      <div className="rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-xs text-slate-700 font-semibold">
-                        PM
-                      </div>
+                  {/* Progress bar */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs font-semibold text-white/80">
+                      <span>Dispatch Progress</span>
+                      <span className="font-mono text-[11px]">{Math.min(dispatchStep + 1, 4)} / 4 Complete</span>
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {['Now', 'In 30m', 'In 1h', 'In 2h', 'In 4h'].map((t) => (
-                        <button key={t} className="px-2.5 py-1 rounded-md border border-slate-200 bg-white text-[10px] font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
-                          {t}
-                        </button>
+                    <div className="flex items-center gap-2">
+                      {[0, 1, 2, 3].map((s) => (
+                        <div
+                          key={s}
+                          className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
+                            dispatchStep >= s ? 'bg-white' : 'bg-white/20'
+                          }`}
+                        />
                       ))}
                     </div>
                   </div>
 
-                  {/* PROJECT TAG */}
-                  <div className="md:col-span-2">
-                    <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
-                      Project Tag
-                    </label>
-                    <div className="flex items-center rounded-xl border border-slate-200 bg-white overflow-hidden">
-                      <span className="px-3 py-2.5 text-xs font-bold text-slate-400 border-r border-slate-200">#</span>
-                      <span className="px-3 py-2.5 text-xs text-slate-400">e.g. PRJ-2024-001</span>
-                    </div>
-                  </div>
-
-                  {/* PURPOSE OF TRAVEL */}
+                  {/* Action trigger button */}
                   <div>
-                    <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
-                      Purpose of Travel <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="w-full rounded-xl border border-slate-200 bg-white px-3 pt-2.5 pb-6 text-xs text-slate-400 min-h-[72px]">
-                        Describe the reason for this trip...
-                      </div>
-                      <span className="absolute bottom-2 right-3 text-[10px] text-slate-400">0 / 300</span>
-                    </div>
-                  </div>
-
-                  {/* NOTES */}
-                  <div>
-                    <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
-                      Notes
-                    </label>
-                    <div className="relative">
-                      <div className="w-full rounded-xl border border-slate-200 bg-white px-3 pt-2.5 pb-6 text-xs text-slate-400 min-h-[72px]">
-                        Notes...
-                      </div>
-                      <span className="absolute bottom-2 right-3 text-[10px] text-slate-400">0 / 300</span>
-                    </div>
+                    <AnimatePresence mode="wait">
+                      {dispatchStep === 3 ? (
+                        <motion.div
+                          key="done"
+                          initial={{ opacity: 0, scale: 0.96, y: 6 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="w-full py-3 px-4 rounded-lg bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-black/20"
+                        >
+                          <Check className="w-4 h-4" /> Trip dispatched in 1.4 seconds
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="going"
+                          initial={{ opacity: 0, scale: 0.96, y: 6 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="w-full py-3 px-4 rounded-lg bg-white/15 border border-white/25 backdrop-blur-sm text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 animate-spin text-violet-200" /> Compiling dispatch telemetry...
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
 
-                {/* AUTHORIZED BY */}
-                <div className="mt-4 flex items-center justify-between px-3 py-2.5 rounded-xl border border-slate-200 bg-white">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20H7a2 2 0 01-2-2v-1a5 5 0 015-5h4a5 5 0 015 5v1a2 2 0 01-2 2z"/><circle cx="12" cy="8" r="4"/><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l1 1 3-3"/></svg>
-                    </div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700">Authorized By:</span>
-                  </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border border-slate-200 bg-slate-50 text-slate-500">Required</span>
-                </div>
-
-                {/* REQUESTED BY */}
-                <div className="mt-4">
-                  <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
-                    Requested By <span className="text-red-500">*</span>
-                  </label>
-                  <div className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-400">
-                    Requestor&apos;s Name
-                  </div>
+                {/* Right side: 3 Animated Wizard Step Cards */}
+                <div className="lg:col-span-7 space-y-2.5">
+                  {[
+                    { n: 1, label: 'Route', value: 'Manila North → Calamba', right: '68.4 km', rightCls: 'text-white/60 font-mono text-xs' },
+                    { n: 2, label: 'Fuel Forecast', value: '21.5 L · Auto-computed', right: 'Optimal', rightCls: 'text-xs font-bold text-emerald-300 bg-emerald-400/20 border border-emerald-300/25 px-2.5 py-0.5 rounded-md' },
+                    { n: 3, label: 'Assignment', value: 'Ramon S. · Truck #08', right: 'Confirmed', rightCls: 'text-[11px] text-white/45' },
+                  ].map(({ n, label, value, right, rightCls }) => (
+                    <motion.div
+                      key={n}
+                      animate={{ opacity: dispatchStep >= n - 1 ? 1 : 0.3, y: dispatchStep >= n - 1 ? 0 : 10 }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
+                      className="flex items-center justify-between bg-white/12 backdrop-blur-md border border-white/20 rounded-xl px-4 sm:px-5 py-3 sm:py-3.5"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 transition-all duration-300 ${
+                            dispatchStep >= n - 1 ? 'bg-white text-indigo-700 shadow-md' : 'bg-white/15 text-white/40'
+                          }`}
+                        >
+                          {n}
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-white/50 font-semibold uppercase tracking-wider mb-0.5">{label}</div>
+                          <div className="text-sm sm:text-base font-bold text-white leading-tight">{value}</div>
+                        </div>
+                      </div>
+                      <span className={rightCls}>{right}</span>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
             </div>
