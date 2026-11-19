@@ -17,6 +17,7 @@ const TrackDriversMiniMap = dynamic(
   }
 );
 import LandingAnalyticsChart from '@/components/landing/LandingAnalyticsChart';
+import LandingPlanTripPreview from '@/components/landing/LandingPlanTripPreview';
 import {
   Maximize2,
   Navigation,
@@ -83,55 +84,12 @@ export default function CoreTelemetrySection() {
     return () => clearInterval(timer);
   }, []);
 
-  // Plan Trip live interactive preview step: 1 = Trip Details, 2 = Review, 3 = Dispatched
-  const [planTripStep, setPlanTripStep] = useState(1);
-  const [planTripIndex, setPlanTripIndex] = useState(0);
-  const PLAN_TRIPS = [
-    {
-      origin: 'LivanTrade Pagbilao Depot',
-      dest: 'Batangas Container Terminal',
-      vehicle: 'BOOMTRUCK · ABK 9352',
-      driver: 'jamesdy7830',
-      depTime: 'Oct 21, 2026 • 02:45 PM',
-      purpose: 'Delivery & Equipment Haul',
-      dist: '84.50 km',
-      fuel: '7.04 L',
-      efficiency: '12 km/L',
-      tripId: 'TRP-2026-089',
-    },
-    {
-      origin: 'Manila North Harbor Hub',
-      dest: 'Calamba Logistics Depot',
-      vehicle: 'ISUZU GIGA HEAVY · NCR 4108',
-      driver: 'Juan Dela Cruz',
-      depTime: 'Oct 22, 2026 • 09:30 AM',
-      purpose: 'Raw Materials Transfer',
-      dist: '68.40 km',
-      fuel: '8.05 L',
-      efficiency: '8.5 km/L',
-      tripId: 'TRP-2026-090',
-    },
-  ];
-  const activePlanTrip = PLAN_TRIPS[planTripIndex];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setPlanTripStep((prev) => {
-        if (prev === 1) return 2;
-        if (prev === 2) return 3;
-        setPlanTripIndex((i) => (i + 1) % PLAN_TRIPS.length);
-        return 1;
-      });
-    }, 4200);
-    return () => clearInterval(timer);
-  }, [PLAN_TRIPS.length]);
-
   // ─── Shared card styles ─────────────────────────────────────────────────────
   const CARD = "group bg-white rounded-2xl border border-slate-200/80 shadow-[0_6px_20px_-3px_rgba(15,23,42,0.14),0_3px_8px_rgba(15,23,42,0.08)] hover:shadow-[0_18px_38px_-4px_rgba(15,23,42,0.24),0_6px_14px_rgba(15,23,42,0.10)] transition-shadow duration-300 ease-out flex flex-col justify-between overflow-hidden";
 
   // ─── Shared app "window chrome" header ──────────────────────────────────────
   const AppHeader = ({ title, subtitle, badge, badgeColor = 'blue' }: {
-    title: string; subtitle: string; badge: string; badgeColor?: string;
+    title: string; subtitle: string; badge?: string; badgeColor?: string;
   }) => {
     const colors: Record<string, string> = {
       blue: 'bg-blue-50 text-blue-700 border-blue-100',
@@ -147,10 +105,12 @@ export default function CoreTelemetrySection() {
           </h4>
           <p className="text-[9px] text-slate-400 mt-0.5">{subtitle}</p>
         </div>
-        <div className={`flex items-center gap-1.5 ${colors[badgeColor]} px-2 py-0.5 rounded-md font-semibold text-[10px] border`}>
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          {badge}
-        </div>
+        {badge && (
+          <div className={`flex items-center gap-1.5 ${colors[badgeColor]} px-2 py-0.5 rounded-md font-semibold text-[10px] border`}>
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            {badge}
+          </div>
+        )}
       </div>
     );
   };
@@ -295,7 +255,7 @@ export default function CoreTelemetrySection() {
 
             {/* App window embed: Analytics page */}
             <div className="mx-4 mb-4 rounded-lg overflow-hidden border border-slate-200 shadow-2xs flex flex-col flex-1 bg-white">
-              <AppHeader title="Fleet Analytics" subtitle="Fuel consumed, distance, and efficiency metrics." badge="Live Data" badgeColor="emerald" />
+              <AppHeader title="Fleet Analytics" subtitle="Fuel consumed, distance, and efficiency metrics." />
 
               <div className="flex-1 flex flex-col bg-slate-50">
                 <LandingAnalyticsChart compact />
@@ -940,397 +900,19 @@ export default function CoreTelemetrySection() {
           ═══════════════════════════════════════════════════════════ */}
           <div className="group bg-white rounded-2xl border border-slate-200/80 shadow-[0_6px_20px_-3px_rgba(15,23,42,0.14),0_3px_8px_rgba(15,23,42,0.08)] hover:shadow-[0_18px_38px_-4px_rgba(15,23,42,0.24),0_6px_14px_rgba(15,23,42,0.10)] transition-shadow duration-300 ease-out flex flex-col overflow-hidden md:col-span-12 lg:col-span-12">
             {/* Title row */}
-            <div className="px-6 sm:px-8 pt-5 sm:pt-6 pb-3 flex items-start justify-between gap-3 bg-white">
+            <div className="px-6 pt-5 pb-3 flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-lg sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
-                  Dispatch trips in seconds
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                  Two-step workflow: configure route &amp; fleet logistics, review auto-computed fuel, and dispatch instantly.
-                </p>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-950 tracking-tight leading-snug">Dispatch trips in seconds</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Two-step workflow: configure route &amp; fleet, review auto-computed fuel, and dispatch instantly.</p>
               </div>
-              <Link href="/auth/plan-trip" aria-label="Open Plan Trip" className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors shrink-0">
-                <Maximize2 className="w-3.5 h-3.5" />
+              <Link href="/auth/plan-trip" aria-label="Open Plan Trip" className="w-7 h-7 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors shrink-0">
+                <Maximize2 className="w-3 h-3" />
               </Link>
             </div>
 
-            {/* App window embed */}
-            <div className="mx-4 mb-4 rounded-xl overflow-hidden border border-slate-200/90 shadow-sm bg-white flex flex-col">
-              {/* Inner Plan Trip Page Container */}
-              <div className="bg-slate-50/50 p-4 sm:p-6 flex flex-col">
-                {/* Hero / Header matching real /auth/plan-trip */}
-                <div className="text-center mb-4 sm:mb-6">
-                  <span className="text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-widest block mb-1">
-                    New Dispatch
-                  </span>
-                  <h4 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    Plan Trip
-                  </h4>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Configure logistical routes with real-time precision.
-                  </p>
-                </div>
-
-                {/* 2-Step Progress Stepper matching StepHeader */}
-                <div className="w-full max-w-xl mx-auto mb-6 px-4">
-                  <div className="flex items-center justify-between relative">
-                    {/* Step 1: Trip Details */}
-                    <div
-                      onClick={() => setPlanTripStep(1)}
-                      className="flex flex-col items-center relative z-10 cursor-pointer group"
-                    >
-                      <div
-                        className={`w-9 h-9 rounded-full border-2 flex items-center justify-center font-bold text-xs transition-all duration-300 ${
-                          planTripStep > 1
-                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-md'
-                            : 'bg-white border-emerald-500 text-emerald-600 shadow-md ring-2 ring-emerald-500/20'
-                        }`}
-                      >
-                        {planTripStep > 1 ? <Check className="w-4 h-4 stroke-[3]" /> : '1'}
-                      </div>
-                      <span
-                        className={`mt-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
-                          planTripStep >= 1 ? 'text-emerald-700' : 'text-slate-400'
-                        }`}
-                      >
-                        Trip Details
-                      </span>
-                    </div>
-
-                    {/* Connector line */}
-                    <div className="flex-1 h-[2px] bg-slate-200 mx-3 -translate-y-3 relative overflow-hidden rounded-full">
-                      <div
-                        className="h-full bg-emerald-500 transition-all duration-500 rounded-full"
-                        style={{
-                          width: planTripStep > 1 ? '100%' : '50%',
-                        }}
-                      />
-                    </div>
-
-                    {/* Step 2: Review */}
-                    <div
-                      onClick={() => setPlanTripStep(2)}
-                      className="flex flex-col items-center relative z-10 cursor-pointer group"
-                    >
-                      <div
-                        className={`w-9 h-9 rounded-full border-2 flex items-center justify-center font-bold text-xs transition-all duration-300 ${
-                          planTripStep === 3
-                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-md'
-                            : planTripStep === 2
-                            ? 'bg-white border-emerald-500 text-emerald-600 shadow-md ring-2 ring-emerald-500/20'
-                            : 'bg-white border-slate-300 text-slate-400'
-                        }`}
-                      >
-                        {planTripStep === 3 ? <Check className="w-4 h-4 stroke-[3]" /> : '2'}
-                      </div>
-                      <span
-                        className={`mt-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
-                          planTripStep >= 2 ? 'text-emerald-700' : 'text-slate-400'
-                        }`}
-                      >
-                        Review
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Dynamic Step View matching CombinedTripDetails and TripPreview */}
-                <div className="bg-white rounded-xl border border-slate-200/90 p-4 sm:p-6 shadow-xs max-w-4xl mx-auto w-full min-h-[300px]">
-                  <AnimatePresence mode="wait">
-                    {/* ─────────────────────────────────────────────────────────────
-                        STEP 1: TRIP DETAILS (CombinedTripDetails)
-                    ───────────────────────────────────────────────────────────── */}
-                    {planTripStep === 1 && (
-                      <motion.div
-                        key="step-1"
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.25 }}
-                        className="space-y-5"
-                      >
-                        {/* Section 1: Timeline & Requester */}
-                        <div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <Clock className="w-4 h-4 text-emerald-600" />
-                            <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                              Request Timeline &amp; Requester
-                            </h5>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            {/* Departure */}
-                            <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-2.5">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                                Departure Schedule
-                              </span>
-                              <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5 font-mono">
-                                <Clock className="w-3 h-3 text-slate-400 shrink-0" />
-                                {activePlanTrip.depTime}
-                              </div>
-                            </div>
-
-                            {/* Requester */}
-                            <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-2.5">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                                Requested By
-                              </span>
-                              <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                                TripSync ADMIN
-                              </div>
-                            </div>
-
-                            {/* Purpose */}
-                            <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-2.5">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                                Travel Purpose
-                              </span>
-                              <div className="text-xs font-bold text-slate-800 truncate">
-                                {activePlanTrip.purpose}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Section 2: Locations & Fleet Logistics */}
-                        <div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <MapPin className="w-4 h-4 text-blue-600" />
-                            <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                              Route Plan &amp; Vehicle Assignment
-                            </h5>
-                          </div>
-
-                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
-                            {/* Route Segment Inputs (Left 7 cols) */}
-                            <div className="lg:col-span-7 space-y-2">
-                              {/* Origin */}
-                              <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-100 shrink-0" />
-                                <div className="min-w-0 flex-1">
-                                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">
-                                    Origin · Depot
-                                  </span>
-                                  <span className="text-xs font-bold text-slate-800 truncate block">
-                                    {activePlanTrip.origin}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Destination */}
-                              <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-                                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 ring-4 ring-rose-100 shrink-0" />
-                                <div className="min-w-0 flex-1">
-                                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">
-                                    Destination · Delivery
-                                  </span>
-                                  <span className="text-xs font-bold text-slate-800 truncate block">
-                                    {activePlanTrip.dest}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Truck & Driver Select (Right 5 cols) */}
-                            <div className="lg:col-span-5 space-y-2">
-                              {/* Vehicle */}
-                              <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-                                <Truck className="w-4 h-4 text-slate-500 shrink-0" />
-                                <div className="min-w-0 flex-1">
-                                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">
-                                    Assigned Vehicle
-                                  </span>
-                                  <span className="text-xs font-bold text-slate-800 truncate block">
-                                    {activePlanTrip.vehicle}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Driver */}
-                              <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-                                <div className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0">
-                                  {activePlanTrip.driver.charAt(0).toUpperCase()}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">
-                                    Designated Driver
-                                  </span>
-                                  <span className="text-xs font-bold text-slate-800 truncate block">
-                                    {activePlanTrip.driver}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Footer action */}
-                        <div className="pt-2 flex items-center justify-between border-t border-slate-100">
-                          <span className="text-[11px] text-slate-400">
-                            Step 1 of 2 · Route geometry &amp; fleet verification
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setPlanTripStep(2)}
-                            className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-                          >
-                            <span>Proceed to Trip Review</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {/* ─────────────────────────────────────────────────────────────
-                        STEP 2: TRIP PREVIEW (TripPreview)
-                    ───────────────────────────────────────────────────────────── */}
-                    {planTripStep === 2 && (
-                      <motion.div
-                        key="step-2"
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.25 }}
-                        className="space-y-4"
-                      >
-                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                          <div>
-                            <h5 className="text-sm font-bold text-slate-900 tracking-tight">
-                              Trip Review
-                            </h5>
-                            <p className="text-[11px] text-slate-400">
-                              Verify fuel requirements and itinerary before dispatch.
-                            </p>
-                          </div>
-                          <span className="px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold uppercase">
-                            Ready to Dispatch
-                          </span>
-                        </div>
-
-                        {/* Logistics & Fuel KPI Banner matching real app */}
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
-                          {/* Vehicle & Driver */}
-                          <div className="border-b sm:border-b-0 sm:border-r border-slate-200 pb-3 sm:pb-0 sm:pr-3">
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">
-                              Assigned Fleet
-                            </span>
-                            <div className="text-xs font-black text-slate-900 mt-0.5 truncate">
-                              {activePlanTrip.vehicle}
-                            </div>
-                            <div className="text-[11px] text-slate-500 mt-0.5">
-                              Driver: <strong className="text-slate-800">{activePlanTrip.driver}</strong>
-                            </div>
-                          </div>
-
-                          {/* Est Fuel Requirement */}
-                          <div className="border-b sm:border-b-0 sm:border-r border-slate-200 pb-3 sm:pb-0 sm:pr-3">
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">
-                              Est. Fuel Requirement
-                            </span>
-                            <div className="text-lg font-black text-blue-700 mt-0.5 font-mono">
-                              {activePlanTrip.fuel}
-                            </div>
-                            <div className="text-[10px] text-slate-400">
-                              Efficiency: {activePlanTrip.efficiency} · +10% traffic allowance
-                            </div>
-                          </div>
-
-                          {/* Distance & Route */}
-                          <div>
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">
-                              Total Route Distance
-                            </span>
-                            <div className="text-lg font-black text-emerald-700 mt-0.5 font-mono">
-                              {activePlanTrip.dist}
-                            </div>
-                            <div className="text-[10px] text-slate-400 truncate">
-                              Direct highway navigation
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Route Timeline view */}
-                        <div className="bg-white rounded-lg border border-slate-200 p-3">
-                          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
-                            Route Plan
-                          </span>
-                          <div className="relative pl-5 space-y-2.5">
-                            <div className="absolute left-[7px] top-[6px] bottom-[6px] w-[1.5px] bg-dashed border-l border-slate-300" />
-                            <div className="relative flex items-center justify-between">
-                              <span className="absolute -left-5 w-2.5 h-2.5 rounded-full bg-blue-600 ring-2 ring-white" />
-                              <span className="text-xs font-bold text-slate-800 truncate">
-                                {activePlanTrip.origin}
-                              </span>
-                              <span className="text-[10px] font-bold text-blue-600 uppercase">
-                                Origin
-                              </span>
-                            </div>
-                            <div className="relative flex items-center justify-between">
-                              <span className="absolute -left-5 w-2.5 h-2.5 rounded-full bg-emerald-600 ring-2 ring-white" />
-                              <span className="text-xs font-bold text-slate-800 truncate">
-                                {activePlanTrip.dest}
-                              </span>
-                              <span className="text-[10px] font-bold text-emerald-600 uppercase">
-                                Destination
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Footer buttons */}
-                        <div className="pt-2 flex items-center justify-between border-t border-slate-100">
-                          <button
-                            type="button"
-                            onClick={() => setPlanTripStep(1)}
-                            className="px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-                          >
-                            ← Back to Details
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setPlanTripStep(3)}
-                            className="px-5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
-                          >
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Confirm &amp; Dispatch Trip</span>
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {/* ─────────────────────────────────────────────────────────────
-                        STEP 3: DISPATCHED CONFIRMATION (Dispatched & Redirecting)
-                    ───────────────────────────────────────────────────────────── */}
-                    {planTripStep === 3 && (
-                      <motion.div
-                        key="step-3"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.25 }}
-                        className="py-8 flex flex-col items-center justify-center text-center space-y-3"
-                      >
-                        <div className="w-14 h-14 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                          <CheckCircle2 className="w-8 h-8" />
-                        </div>
-                        <div>
-                          <h5 className="text-base font-black text-slate-900">
-                            Trip Dispatched Successfully!
-                          </h5>
-                          <p className="text-xs text-slate-500 mt-1">
-                            Dispatched to driver <strong className="text-slate-800">{activePlanTrip.driver}</strong> · Manifest ID: {activePlanTrip.tripId}
-                          </p>
-                        </div>
-                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono text-[11px] font-bold">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                          <span>Redirecting to Live Fleet Telemetry...</span>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
+            {/* App window embed — replica of the real /auth/plan-trip page (scrollable, auto-plays) */}
+            <div className="mx-4 mb-4 rounded-lg overflow-hidden border border-slate-200 shadow-2xs flex flex-col bg-white">
+              <LandingPlanTripPreview />
             </div>
           </div>
 
