@@ -3,19 +3,17 @@ import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'motion/react';
 import { StepHeader } from '@/components/auth/plan-trip/Header';
 import { Hero } from '@/components/auth/plan-trip/Hero';
-import type { TripFormData } from '@/types/auth/plan-trip/trip-info'
+import type { TripFormData } from '@/types/auth/plan-trip/trip-info';
 import { useToast } from '@/components/ui/Toast/Toast';
 
 // Step Components
-import RequestInformationForm from '@/components/auth/plan-trip/FormFill';
-import LocationStep from '@/components/auth/plan-trip/LocationStep';
-import FuelRequirementStep from '@/components/auth/plan-trip/FuelRequirementStep';
+import CombinedTripDetails from '@/components/auth/plan-trip/CombinedTripDetails';
 import TripPreview from '@/components/auth/plan-trip/TripPreview';
 
 export default function PlanTripPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Added loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast, ToastComponent } = useToast();
   const [formData, setFormData] = useState<Partial<TripFormData>>({});
 
@@ -23,11 +21,10 @@ export default function PlanTripPage() {
     setFormData((prev) => ({ ...prev, ...newData }));
   };
 
-  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 4));
+  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 2));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
   const handleConfirm = async () => {
-    // 1. Prevent double execution if already submitting
     if (isSubmitting) return;
 
     setIsSubmitting(true);
@@ -39,7 +36,7 @@ export default function PlanTripPage() {
       });
 
       const result = await response.json();
-      console.log(result)
+      console.log(result);
 
       if (response.ok) {
         showToast("Trip dispatched successfully! Redirecting to live tracking...", "success");
@@ -58,7 +55,6 @@ export default function PlanTripPage() {
       showToast("Connection error. Please try again.", "error");
       console.error("Fetch error:", err);
     } finally {
-      // 2. Re-enable after the request completes (success or failure)
       setIsSubmitting(false);
     }
   };
@@ -66,42 +62,25 @@ export default function PlanTripPage() {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <RequestInformationForm
-          data={formData}
-          onNext={(data) => {
-            updateFormData(data);
-            nextStep();
-          }}
-          showToast={showToast}
-        />;
+        return (
+          <CombinedTripDetails
+            data={formData}
+            onNext={(data) => {
+              updateFormData(data);
+              nextStep();
+            }}
+            showToast={showToast}
+          />
+        );
       case 2:
-        return <LocationStep
-          data={formData}
-          onNext={(data) => {
-            updateFormData(data);
-            nextStep();
-          }}
-          onBack={prevStep}
-          showToast={showToast}
-        />;
-      case 3:
-        return <FuelRequirementStep
-          data={formData}
-          onNext={(data) => {
-            updateFormData(data);
-            nextStep();
-          }}
-          onBack={prevStep}
-          onReturnToStep={(step) => setCurrentStep(step)}
-          showToast={showToast}
-        />;
-      case 4:
-        return <TripPreview
-          data={formData}
-          onConfirm={handleConfirm}
-          onBack={prevStep}
-          isSubmitting={isSubmitting} // Pass loading state to disable button
-        />;
+        return (
+          <TripPreview
+            data={formData}
+            onConfirm={handleConfirm}
+            onBack={prevStep}
+            isSubmitting={isSubmitting}
+          />
+        );
       default:
         return null;
     }

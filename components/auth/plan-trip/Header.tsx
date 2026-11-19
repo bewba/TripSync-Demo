@@ -3,9 +3,8 @@ import { Check } from 'lucide-react';
 import { motion } from 'motion/react';
 
 const STEPS = [
-  'General Information',
-  'Location',
-  'Fuel Consumption'
+  'Trip Details',
+  'Review'
 ];
 
 interface StepHeaderProps {

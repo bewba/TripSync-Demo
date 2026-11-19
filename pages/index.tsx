@@ -136,7 +136,7 @@ export default function LandingPage() {
 
       {/* Top Navbar */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-6 sm:px-8 h-16 flex items-center justify-between">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <div className="w-8 h-8 rounded-full bg-white border border-slate-200/90 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-slate-300 transition-all">
@@ -160,12 +160,6 @@ export default function LandingPage() {
               >
                 Features
               </a>
-              <Link 
-                href="/auth/active-drivers" 
-                className="hover:text-slate-950 transition-colors hidden sm:inline"
-              >
-                Demo
-              </Link>
             </nav>
 
             <div className="flex items-center gap-3">

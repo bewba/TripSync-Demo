@@ -2,10 +2,8 @@ import React from 'react';
 import {
     CalendarToday,
     LocalShipping,
-    Inventory,
     Route,
     LocalGasStation,
-    VerifiedUser,
     Person
 } from '@mui/icons-material';
 import { TripFormData } from '@/types/auth/plan-trip/trip-info';
@@ -22,20 +20,28 @@ const TripPreview: React.FC<TripPreviewProps> = ({ data, onConfirm, onBack, isSu
     const {
         requestInfo = {} as any,
         locationInfo = { truck: {} as any, locations: [] } as any,
-        inventoryItems = [],
         fuelRequirement = {} as any
     } = data;
 
-    const formatDateTime = (dateTimeString: string | undefined) => {
+    const formatDeparture = (dateTimeString: string | undefined) => {
         if (!dateTimeString) return '—';
         const date = new Date(dateTimeString);
-        if (isNaN(date.getTime())) return '—';
+        if (isNaN(date.getTime())) return dateTimeString;
         return date.toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
             year: 'numeric',
         }) + ' • ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
+
+    const totalDistance = fuelRequirement?.distance ?? 0;
+    const estConsumption = fuelRequirement?.estimatedTotalFuel ?? 0;
+    const trafficAllowance = (estConsumption * 0.10);
+    const fuelEfficiency = locationInfo.truck?.fuel_efficiency ?? 12;
+
+    const originName = locationInfo.locations?.[0]?.name;
+    const destName = locationInfo.locations?.[locationInfo.locations.length - 1]?.name;
+    const isSameLocation = originName && destName && originName === destName;
 
     return (
         <div className="max-w-2xl mx-auto pb-20">
@@ -53,9 +59,14 @@ const TripPreview: React.FC<TripPreviewProps> = ({ data, onConfirm, onBack, isSu
                         <h2 className="text-sm font-medium uppercase tracking-wider">General Information</h2>
                     </div>
                     <div className="grid grid-cols-2 gap-y-4 px-1">
-                        <InfoItem label="Travel Purpose" value={requestInfo.travelPurpose} />
-                        <InfoItem label="Date & Time of Request" value={`${requestInfo.requestDate || ''} • ${requestInfo.requestTime || ''}`} />
-                        <InfoItem label="Scheduled Departure" value={formatDateTime(requestInfo.scheduledDeparture)} />
+                        <InfoItem
+                            label="Date & Time of Request"
+                            value={requestInfo.requestDate && requestInfo.requestTime ? `${requestInfo.requestDate} • ${requestInfo.requestTime}` : '—'}
+                        />
+                        <InfoItem
+                            label="Scheduled Departure"
+                            value={formatDeparture(requestInfo.scheduledDeparture)}
+                        />
                     </div>
                 </section>
 
@@ -104,22 +115,36 @@ const TripPreview: React.FC<TripPreviewProps> = ({ data, onConfirm, onBack, isSu
                             <p className="text-xs text-gray-500 uppercase font-bold tracking-tight flex items-center gap-1">
                                 <Person fontSize="small" /> Driver
                             </p>
-                            <p className="text-lg font-medium text-gray-900">{locationInfo.driver?.full_name || locationInfo.driver?.username || locationInfo.driverName || "No driver selected"}</p>
+                            <p className="text-lg font-medium text-gray-900">
+                                {locationInfo.driver?.full_name || locationInfo.driver?.username || locationInfo.driverName || "No driver selected"}
+                            </p>
                         </div>
                         <div className="text-right border-t sm:border-t-0 sm:border-l border-gray-200 pt-4 sm:pt-0 sm:pl-4 w-full sm:w-auto">
-                            <p className="text-xs text-gray-500 uppercase font-bold tracking-tight">Est. Consumption</p>
-                            <p className="text-lg font-medium text-blue-700">{fuelRequirement?.finalFuelAmount || 0} L</p>
-                            <p className="text-xs text-gray-500 italic mt-1 flex items-center justify-end gap-1">
-                                <LocalGasStation sx={{ fontSize: 14 }} />
-                                {fuelRequirement?.distance || 0} km
+                            <p className="text-xs text-gray-500 uppercase font-bold tracking-tight">Est. Fuel Request</p>
+                            <p className="text-xl font-bold text-blue-700">
+                                {estConsumption.toFixed(2)} L
                             </p>
+                            <p className="text-xs text-gray-500 italic mt-0.5 flex items-center justify-end gap-1">
+                                <LocalGasStation sx={{ fontSize: 13 }} />
+                                {Number(totalDistance).toFixed(2)} km
+                            </p>
+                            <div className="text-[11px] text-gray-500 mt-1 leading-tight space-y-0.5">
+                                <p>Estimated consumption: {estConsumption.toFixed(2)} L</p>
+                                <p>With traffic allowance (10%): {(estConsumption + trafficAllowance).toFixed(2)} L</p>
+                                <p>Fuel efficiency: {fuelEfficiency} km/L</p>
+                            </div>
+                            {isSameLocation && (
+                                <p className="text-xs text-red-500 mt-2 font-medium">
+                                    Invalid distance returned for {originName} to {destName}.
+                                </p>
+                            )}
                         </div>
                     </div>
                 </section>
 
                 <hr className="border-gray-100" />
 
-                {/* SECTION: ROUTE */}
+                {/* SECTION: ROUTE PLAN */}
                 <section>
                     <div className="flex items-center gap-3 mb-4 text-gray-600">
                         <Route fontSize="small" className="text-blue-600" />
@@ -127,52 +152,29 @@ const TripPreview: React.FC<TripPreviewProps> = ({ data, onConfirm, onBack, isSu
                     </div>
                     <div className="ml-2 border-l-2 border-dashed border-gray-200 pl-6 space-y-6 relative">
                         {locationInfo.locations?.map((loc: any, idx: number) => (
-                            <div key={idx} className="space-y-2">
+                            <div key={idx} className="space-y-1">
                                 <div className="relative">
                                     <div className="absolute -left-[31px] top-1 w-3 h-3 rounded-full bg-blue-600 ring-4 ring-white" />
                                     <p className="text-xs font-bold text-blue-600 uppercase mb-0.5">
                                         {idx === 0 ? "Origin" : idx === locationInfo.locations.length - 1 ? "Destination" : `Stop ${idx}`}
                                     </p>
-                                    <p className="text-sm text-gray-800 leading-relaxed">{loc.name}</p>
+                                    <p className="text-sm text-gray-800 leading-relaxed font-medium">{loc.name || "—"}</p>
                                 </div>
-                                {idx < locationInfo.locations.length - 1 && locationInfo.estDistanceRequired?.[idx] !== undefined && (
-                                    <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
-                                        <span className="bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
-                                            {locationInfo.estDistanceRequired[idx]} km
-                                        </span>
-                                    </div>
-                                )}
                             </div>
                         ))}
+                    </div>
+
+                    {/* Total Route Distance Bar */}
+                    <div className="mt-6 flex items-center justify-between p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                        <span className="text-sm font-bold text-slate-700">Total Route Distance</span>
+                        <span className="text-base font-bold text-blue-700">{Number(totalDistance).toFixed(2)} km</span>
                     </div>
                 </section>
 
                 <hr className="border-gray-100" />
-
-                {/* SECTION: INVENTORY */}
-                <section>
-                    <div className="flex items-center gap-3 mb-4 text-gray-600">
-                        <Inventory fontSize="small" className="text-blue-600" />
-                        <h2 className="text-sm font-medium uppercase tracking-wider">Inventory Items</h2>
-                    </div>
-                    <div className="space-y-2">
-                        {inventoryItems.length > 0 ? (
-                            inventoryItems.map((item: any, idx: number) => (
-                                <div key={idx} className="flex justify-between items-center p-3 hover:bg-gray-100/50 rounded-lg transition-colors border border-transparent hover:border-gray-200">
-                                    <span className="text-gray-800 font-medium">{item.itemName}</span>
-                                    <span className="text-sm px-3 py-1 bg-gray-200/50 text-gray-600 rounded-full font-medium">
-                                        {item.itemQuantity} {item.itemUnit}
-                                    </span>
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-sm text-gray-400 italic px-3">No items listed.</p>
-                        )}
-                    </div>
-                </section>
             </div>
 
-            <footer className="mt-12 pt-8 border-t border-gray-200">
+            <footer className="mt-8 pt-4">
                 <StepButton
                     onClick={() => onConfirm(data)}
                     onBack={onBack}
