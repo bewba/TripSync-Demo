@@ -239,7 +239,7 @@ export default function LandingPage() {
                   transition={{ delay: 0.62, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                   className="mt-6 text-sm sm:text-base lg:text-[15px] xl:text-base text-[#64748B] leading-relaxed font-normal"
                 >
-                  Real-time highway tracking, automated dispatch scheduling, and instantaneous stoppage and GPS blackout alerts for modern freight fleets.
+                  Live GPS trip tracking, route-based fuel estimation, and real-time stop and GPS-off detection — built for freight fleets.
                 </motion.p>
 
                 {/* Action Buttons */}
