@@ -184,7 +184,7 @@ export default function LandingPage() {
       {/* Main Hero Section */}
       <main className="flex-1 overflow-x-clip">
         <section className="bg-[#F8FAFC] pt-16 sm:pt-20 lg:pt-24 pb-12 sm:pb-14 lg:pb-16 relative overflow-visible">
-          {/* Subtle dotted logistics route network — slate toned for light bg */}
+          {/* Subtle dashed logistics route network with navigation arrowheads */}
           <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
             <svg
               className="w-full h-full"
@@ -192,18 +192,90 @@ export default function LandingPage() {
               preserveAspectRatio="xMidYMid slice"
               xmlns="http://www.w3.org/2000/svg"
             >
-              {/* Route 1 */}
-              <path d="M -100 130 C 280 50, 620 220, 1060 120 S 1520 40, 2040 160" fill="none" stroke="#94a3b8" strokeWidth="1.6" strokeDasharray="10 8" strokeOpacity="0.25" />
-              {/* Route 2 */}
-              <path d="M -120 250 C 240 150, 560 370, 1020 220 S 1500 100, 2040 290" fill="none" stroke="#94a3b8" strokeWidth="1.4" strokeDasharray="8 6" strokeOpacity="0.2" />
-              {/* Route 3 */}
-              <path d="M -60 380 C 320 280, 740 500, 1200 330 S 1680 180, 2160 410" fill="none" stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="6 6" strokeOpacity="0.18" />
-              {/* Route 4 */}
-              <path d="M 60 520 C 440 430, 860 620, 1360 450 S 1840 300, 2300 540" fill="none" stroke="#94a3b8" strokeWidth="1.1" strokeDasharray="5 5" strokeOpacity="0.15" />
-              {/* Route 5 */}
-              <path d="M 140 -40 C 360 200, 680 360, 1120 540 S 1600 680, 1960 760" fill="none" stroke="#94a3b8" strokeWidth="1.1" strokeDasharray="6 8" strokeOpacity="0.15" />
-              {/* Route 6 */}
-              <path d="M -60 580 C 360 440, 720 200, 1180 160 S 1640 250, 2060 90" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="4 6" strokeOpacity="0.14" />
+              <defs>
+                {/* Outlined navigation pointer arrowhead (same slate color as lines) */}
+                <marker
+                  id="nav-arrow"
+                  viewBox="0 0 24 24"
+                  refX="19"
+                  refY="12"
+                  markerWidth="24"
+                  markerHeight="24"
+                  markerUnits="userSpaceOnUse"
+                  orient="auto"
+                >
+                  <path
+                    d="M 3.5 4 L 20.5 12 L 3.5 20 L 8.5 12 Z"
+                    fill="#F8FAFC"
+                    stroke="#94a3b8"
+                    strokeWidth="1.8"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    strokeOpacity="0.45"
+                  />
+                </marker>
+              </defs>
+
+              {/* Route 1 — Long upper sweep across top */}
+              <path
+                d="M -80 95 C 320 25, 760 120, 1240 60 S 1580 35, 1790 85"
+                fill="none"
+                stroke="#94a3b8"
+                strokeWidth="1.6"
+                strokeDasharray="24 10"
+                strokeOpacity="0.28"
+                markerEnd="url(#nav-arrow)"
+              />
+              {/* Route 2 — Mid-left sweep behind hero copy */}
+              <path
+                d="M -100 225 C 110 155, 260 285, 470 215"
+                fill="none"
+                stroke="#94a3b8"
+                strokeWidth="1.5"
+                strokeDasharray="22 9"
+                strokeOpacity="0.24"
+                markerEnd="url(#nav-arrow)"
+              />
+              {/* Route 3 — Lower-left sweep below hero CTA */}
+              <path
+                d="M -80 510 C 140 440, 320 570, 560 485"
+                fill="none"
+                stroke="#94a3b8"
+                strokeWidth="1.5"
+                strokeDasharray="22 10"
+                strokeOpacity="0.26"
+                markerEnd="url(#nav-arrow)"
+              />
+              {/* Route 4 — Long diagonal down the left margin */}
+              <path
+                d="M 70 -30 C 160 180, 230 460, 410 690"
+                fill="none"
+                stroke="#94a3b8"
+                strokeWidth="1.3"
+                strokeDasharray="20 10"
+                strokeOpacity="0.2"
+                markerEnd="url(#nav-arrow)"
+              />
+              {/* Route 5 — Long sweep along bottom strip */}
+              <path
+                d="M -60 725 C 380 655, 880 770, 1420 715"
+                fill="none"
+                stroke="#94a3b8"
+                strokeWidth="1.4"
+                strokeDasharray="24 10"
+                strokeOpacity="0.22"
+                markerEnd="url(#nav-arrow)"
+              />
+              {/* Route 6 — Right-edge sweeping route */}
+              <path
+                d="M 1180 -30 C 1440 120, 1690 280, 1845 480"
+                fill="none"
+                stroke="#94a3b8"
+                strokeWidth="1.3"
+                strokeDasharray="20 9"
+                strokeOpacity="0.2"
+                markerEnd="url(#nav-arrow)"
+              />
             </svg>
           </div>
 
@@ -286,10 +358,10 @@ export default function LandingPage() {
             {/* Section Header */}
             <div className="max-w-2xl mb-14 sm:mb-18">
               <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-slate-950 tracking-[-0.03em]">
-                What Our Software Prevents
+                What TripSync Prevents
               </h2>
               <p className="mt-3 text-base sm:text-lg text-slate-600 leading-relaxed">
-                The stuff that costs you money quietly. TripSync surfaces it before it becomes a pattern.
+                Unscheduled stops, disabled GPS, and padded fuel requests rarely announce themselves. TripSync catches them on the first trip—before they become a pattern.
               </p>
             </div>
 
