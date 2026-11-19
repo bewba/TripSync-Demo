@@ -94,9 +94,9 @@
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
-/* Animated live telemetry marker transitions */
+/* Hero live markers snap to each telemetry ping (no CSS glide) */
 .hero-live-marker {
-  transition: transform 0.95s linear !important;
+  transition: none !important;
 }
 
 @keyframes hero-radar-ping {

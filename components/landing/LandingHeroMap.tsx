@@ -14,6 +14,28 @@ function formatDuration(totalSeconds: number): string {
   return `${m}m ${s < 10 ? '0' : ''}${s}s`;
 }
 
+// Position after travelling `distM` metres along a looping polyline (linear interpolation)
+function pointAlongPath(path: [number, number][], distM: number): [number, number] {
+  if (path.length < 2) return path[0];
+  const seg = (a: [number, number], b: [number, number]) =>
+    Math.hypot((b[0] - a[0]) * 111000, (b[1] - a[1]) * 107000);
+  let total = 0;
+  for (let i = 0; i < path.length - 1; i++) total += seg(path[i], path[i + 1]);
+  let d = ((distM % total) + total) % total;
+  for (let i = 0; i < path.length - 1; i++) {
+    const len = seg(path[i], path[i + 1]);
+    if (d <= len) {
+      const t = len === 0 ? 0 : d / len;
+      return [
+        path[i][0] + (path[i + 1][0] - path[i][0]) * t,
+        path[i][1] + (path[i + 1][1] - path[i][1]) * t,
+      ];
+    }
+    d -= len;
+  }
+  return path[path.length - 1];
+}
+
 export interface LandingDriverConfig {
   tripId: string;
   driverName: string;
@@ -24,7 +46,9 @@ export interface LandingDriverConfig {
   destination: string;
   corridor: string;
   baseSpeed: number;
-  stepPerPing: number; // Speed multiplier per uniform telemetry ping
+  stepPerPing: number; // (legacy) unused for movement
+  speedMps?: number;
+  startOffsetM?: number;
   path: [number, number][];
   status?: 'online' | 'offline' | 'stopped';
   lastSeen?: string;
@@ -60,6 +84,8 @@ const DEMO_FLEET_CONFIG: LandingDriverConfig[] = [
     corridor: 'McKinley • SLEX Corridor',
     baseSpeed: 64,
     stepPerPing: 2, // Fast cruising speed (2 points per ping)
+    speedMps: 17.8, // metres travelled per 1s ping
+    startOffsetM: 3824, // spaced-out starting point along the route
     path: REAL_MCKINLEY_ROAD,
     status: 'online',
   },
@@ -74,6 +100,8 @@ const DEMO_FLEET_CONFIG: LandingDriverConfig[] = [
     corridor: 'Ayala Ave • Buendia Freight',
     baseSpeed: 38,
     stepPerPing: 0.5, // Heavy tanker (1 point every 2 pings)
+    speedMps: 10.6, // metres travelled per 1s ping
+    startOffsetM: 1238, // spaced-out starting point along the route
     path: REAL_AYALA_ROAD,
     status: 'online',
   },
@@ -88,6 +116,8 @@ const DEMO_FLEET_CONFIG: LandingDriverConfig[] = [
     corridor: 'BGC 5th Ave Arterial',
     baseSpeed: 54,
     stepPerPing: 1, // Standard urban delivery speed (1 point per ping)
+    speedMps: 15.0, // metres travelled per 1s ping
+    startOffsetM: 2496, // spaced-out starting point along the route
     path: REAL_BGC_ROAD,
     status: 'online',
   },
@@ -117,6 +147,8 @@ const DEMO_FLEET_CONFIG: LandingDriverConfig[] = [
     corridor: 'EDSA Arterial • Buendia Flyover',
     baseSpeed: 48,
     stepPerPing: 1, // Standard cruising speed along EDSA corridor
+    speedMps: 13.3, // metres travelled per 1s ping
+    startOffsetM: 4219, // spaced-out starting point along the route
     path: REAL_EDSA_ROAD,
     status: 'online',
   },
@@ -127,41 +159,29 @@ export default function LandingHeroMap() {
   const mapRef = useRef<any>(null);
   const layerGroupRef = useRef<any>(null);
   const markersRef = useRef<Map<string, any>>(new Map());
+  const lastPlacedRef = useRef<Map<string, { lat: number; lng: number }>>(new Map());
+  const lastIconStateRef = useRef<Map<string, string>>(new Map());
 
   const [isMapReady, setIsMapReady] = useState(false);
   const [hoveredDriverId, setHoveredDriverId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Staggered starting indices for each driver
-  const [stepIndices, setStepIndices] = useState<Record<string, number>>({
-    'TRP-106': 0,
-    'TRP-101': 20,
-    'TRP-102': 10,
-    'TRP-103': 35,
-    'TRP-104': 0,
-    'TRP-105': 25,
+  // Distance travelled (metres) along each driver's route, starting from spaced-out offsets
+  const [distances, setDistances] = useState<Record<string, number>>(() => {
+    const init: Record<string, number> = {};
+    DEMO_FLEET_CONFIG.forEach((d) => { init[d.tripId] = d.startOffsetM ?? 0; });
+    return init;
   });
   const [timerTick, setTimerTick] = useState(0);
 
-  // Uniform 1-second telemetry ping for all vehicles, moving at different speeds & ticking stopped timer
+  // 1-second telemetry ping: each driver advances by a small, realistic distance along the road
   useEffect(() => {
-    let pingCount = 0;
     const interval = setInterval(() => {
-      pingCount += 1;
       setTimerTick((t) => t + 1);
-      setStepIndices((prev) => {
+      setDistances((prev) => {
         const next: Record<string, number> = {};
         DEMO_FLEET_CONFIG.forEach((driver) => {
-          let advance = 0;
-          if (driver.stepPerPing === 2) {
-            advance = 2;
-          } else if (driver.stepPerPing === 1) {
-            advance = 1;
-          } else if (driver.stepPerPing === 0.5) {
-            advance = pingCount % 2 === 0 ? 1 : 0;
-          }
-          const currentIndex = prev[driver.tripId] ?? 0;
-          next[driver.tripId] = (currentIndex + advance) % driver.path.length;
+          next[driver.tripId] = (prev[driver.tripId] ?? 0) + (driver.speedMps ?? 0);
         });
         return next;
       });
@@ -173,8 +193,9 @@ export default function LandingHeroMap() {
   // Compute live coordinates and realistic individual speeds for each driver
   const currentFleet = useMemo(() => {
     return DEMO_FLEET_CONFIG.map((driver) => {
-      const idx = stepIndices[driver.tripId] ?? 0;
-      const coords = driver.path[idx] || driver.path[0];
+      const dist = distances[driver.tripId] ?? 0;
+      const idx = Math.floor(dist / 30);
+      const coords = pointAlongPath(driver.path, dist);
       const isOffline = driver.status === 'offline';
       const isStopped = driver.status === 'stopped';
       const speedFluctuation = isOffline || isStopped ? 0 : Math.round(Math.sin(idx * 0.35) * 2);
@@ -190,7 +211,7 @@ export default function LandingHeroMap() {
         formattedStoppedDuration: formatDuration(stoppedDurationSec),
       };
     });
-  }, [stepIndices, timerTick]);
+  }, [distances, timerTick]);
 
   const onlineCount = useMemo(() => currentFleet.filter((d) => d.status === 'online').length, [currentFleet]);
   const stoppedCount = useMemo(() => currentFleet.filter((d) => d.status === 'stopped').length, [currentFleet]);
@@ -294,6 +315,7 @@ export default function LandingHeroMap() {
         const size = isHovered ? 38 : 28;
         const zIndex = isHovered ? 1000 : isOffline ? 60 : isStopped ? 700 : 100;
         const bgColor = isHovered ? '#3b82f6' : isOffline ? '#64748b' : isStopped ? '#ef4444' : '#22c55e';
+        const iconStateKey = `${isStopped ? 'stopped' : isOffline ? 'offline' : 'active'}_${isHovered ? 'hover' : 'idle'}_${size}`;
 
         // Circular location pin icon matching demo site ActiveDriversMap (no pulsing wave)
         const iconHtml = `
@@ -315,7 +337,7 @@ export default function LandingHeroMap() {
         `;
 
         const icon = L.divIcon({
-          className: 'hero-live-marker bg-transparent',
+          className: 'bg-transparent',
           html: iconHtml,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2],
@@ -404,11 +426,34 @@ export default function LandingHeroMap() {
           });
 
           markersRef.current.set(driver.tripId, marker);
+          lastPlacedRef.current.set(driver.tripId, { lat: driver.lat, lng: driver.lng });
+          lastIconStateRef.current.set(driver.tripId, iconStateKey);
         } else {
-          marker.setIcon(icon);
-          marker.setLatLng([driver.lat, driver.lng]);
+          // Only swap the icon when its visual style changes (avoids resetting CSS every tick)
+          if (lastIconStateRef.current.get(driver.tripId) !== iconStateKey) {
+            marker.setIcon(icon);
+            lastIconStateRef.current.set(driver.tripId, iconStateKey);
+          }
           marker.setZIndexOffset(zIndex);
           marker.setTooltipContent(tooltipHtml);
+
+          // Only move the marker once it has travelled >= 3 meters (same as demo site)
+          const last = lastPlacedRef.current.get(driver.tripId);
+          let shouldMove = true;
+          if (last) {
+            const toRad = (deg: number) => (deg * Math.PI) / 180;
+            const dLat = toRad(driver.lat - last.lat);
+            const dLng = toRad(driver.lng - last.lng);
+            const a =
+              Math.sin(dLat / 2) ** 2 +
+              Math.cos(toRad(last.lat)) * Math.cos(toRad(driver.lat)) * Math.sin(dLng / 2) ** 2;
+            const distanceMeters = 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            shouldMove = distanceMeters >= 3;
+          }
+          if (shouldMove) {
+            marker.setLatLng([driver.lat, driver.lng]);
+            lastPlacedRef.current.set(driver.tripId, { lat: driver.lat, lng: driver.lng });
+          }
         }
       });
     })();
