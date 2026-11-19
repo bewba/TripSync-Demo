@@ -2,6 +2,40 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { demoStore } from '@/lib/demoStore';
 import { getTomTomDistance } from '@/lib/services/tomtom';
 
+/**
+ * Fetch a road-following route from the OSRM public API (no API key required).
+ * Returns [lat, lng] waypoints snapped to actual roads, or null on failure.
+ */
+async function getOsrmRoute(
+  lat1: number, lon1: number,
+  lat2: number, lon2: number,
+): Promise<{ distanceKm: number; durationMin: number; waypoints: [number, number][] } | null> {
+  try {
+    const url = `http://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    if (!data.routes?.length) return null;
+
+    const route = data.routes[0];
+    const coords: [number, number][] = route.geometry.coordinates.map(
+      (c: [number, number]) => [
+        parseFloat(c[1].toFixed(6)),
+        parseFloat(c[0].toFixed(6)),
+      ]
+    );
+
+    return {
+      distanceKm: parseFloat((route.distance / 1000).toFixed(2)),
+      durationMin: Math.round(route.duration / 60),
+      waypoints: coords,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Use GET' });
@@ -20,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const safeLat2 = !isNaN(pLat2) && pLat2 !== 0 ? pLat2 : 14.5547;
     const safeLon2 = !isNaN(pLon2) && pLon2 !== 0 ? pLon2 : 121.0244;
 
-    // Try TomTom API if key exists
+    // ── 1. TomTom (primary — road-accurate, real-time traffic) ──────
     if (process.env.TOMTOM_API_KEY) {
       try {
         const tomtomResult = await getTomTomDistance(
@@ -41,11 +75,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           });
         }
       } catch (tomtomErr) {
-        console.warn('[Distance API] TomTom calculation fallback to demoStore:', tomtomErr);
+        console.warn('[Distance API] TomTom failed, trying OSRM:', tomtomErr);
       }
     }
 
-    // Fallback to local high-precision calculator
+    // ── 2. OSRM public API (secondary — road-accurate, free, no key) ─
+    const osrmResult = await getOsrmRoute(safeLat1, safeLon1, safeLat2, safeLon2);
+    if (osrmResult) {
+      const h = Math.floor(osrmResult.durationMin / 60);
+      const m = osrmResult.durationMin % 60;
+      return res.status(200).json({
+        distance: {
+          distanceKm: osrmResult.distanceKm,
+          timeString: h > 0 ? `${h}h ${m}m` : `${m}m`,
+          waypoints: osrmResult.waypoints,
+        },
+      });
+    }
+
+    // ── 3. Local haversine estimate (last-resort, straight-line approx) ─
+    console.warn('[Distance API] All routing APIs failed – using haversine fallback.');
     const result = demoStore.calculateRouteDistance(
       safeLat1,
       safeLon1,
