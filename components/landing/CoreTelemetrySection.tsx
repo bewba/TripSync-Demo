@@ -127,7 +127,7 @@ export default function CoreTelemetrySection() {
   }, [PLAN_TRIPS.length]);
 
   // ─── Shared card styles ─────────────────────────────────────────────────────
-  const CARD = "group bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden";
+  const CARD = "group bg-white rounded-2xl border border-slate-200/80 shadow-[0_6px_20px_-3px_rgba(15,23,42,0.14),0_3px_8px_rgba(15,23,42,0.08)] hover:shadow-[0_18px_38px_-4px_rgba(15,23,42,0.24),0_6px_14px_rgba(15,23,42,0.10)] transition-shadow duration-300 ease-out flex flex-col justify-between overflow-hidden";
 
   // ─── Shared app "window chrome" header ──────────────────────────────────────
   const AppHeader = ({ title, subtitle, badge, badgeColor = 'blue' }: {
@@ -156,7 +156,7 @@ export default function CoreTelemetrySection() {
   };
 
   return (
-    <section id="features" className="bg-white border-t border-slate-200/80 pt-16 sm:pt-20 pb-24 sm:pb-32 relative">
+    <section id="features" className="bg-white border-t border-slate-300 pt-16 sm:pt-20 pb-24 sm:pb-32 relative">
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
 
         {/* Section Header */}
@@ -938,7 +938,7 @@ export default function CoreTelemetrySection() {
               CARD 3 — DISPATCH TRIPS IN SECONDS (FULL-WIDTH: 12 COLS)
               Authentic /auth/plan-trip 2-step stepper and preview embed
           ═══════════════════════════════════════════════════════════ */}
-          <div className="group bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden md:col-span-12 lg:col-span-12">
+          <div className="group bg-white rounded-2xl border border-slate-200/80 shadow-[0_6px_20px_-3px_rgba(15,23,42,0.14),0_3px_8px_rgba(15,23,42,0.08)] hover:shadow-[0_18px_38px_-4px_rgba(15,23,42,0.24),0_6px_14px_rgba(15,23,42,0.10)] transition-shadow duration-300 ease-out flex flex-col overflow-hidden md:col-span-12 lg:col-span-12">
             {/* Title row */}
             <div className="px-6 sm:px-8 pt-5 sm:pt-6 pb-3 flex items-start justify-between gap-3 bg-white">
               <div>

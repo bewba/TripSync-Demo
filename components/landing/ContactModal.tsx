@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { X, CheckCircle, Mail, Building2, User, Phone, Send } from 'lucide-react';
 
+const CONTACT_EMAIL = 'lumaguihans0123@gmail.com';
+
 interface ContactModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,14 +20,24 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
     message: '',
   });
 
+  const [copied, setCopied] = useState(false);
+
   if (!isOpen) return null;
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(CONTACT_EMAIL);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const subject = `Demo request from ${formData.name}${formData.company ? ` (${formData.company})` : ''}`;
+    const body = `Name: ${formData.name}\nEmail: ${formData.email}\nCompany: ${formData.company || '-'}\nFleet size: ${formData.fleetSize}\n\n${formData.message}`;
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     setSubmitted(true);
-    setTimeout(() => {
-      // Allow user to view confirmation
-    }, 500);
   };
 
   return (
@@ -37,8 +49,8 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-slate-50/50">
           <div>
-            <h3 className="text-lg font-bold text-slate-900 tracking-tight">Contact Logistics Solutions</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Speak with our telematics engineering team.</p>
+            <h3 className="text-lg font-bold text-slate-900 tracking-tight">Schedule a Demo</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Fill this in, or email us at lumaguihans0123@gmail.com.</p>
           </div>
           <button
             onClick={onClose}
@@ -55,10 +67,16 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
               <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
                 <CheckCircle className="w-8 h-8" />
               </div>
-              <h4 className="text-lg font-bold text-slate-900">Inquiry Received</h4>
+              <h4 className="text-lg font-bold text-slate-900">Almost there!</h4>
               <p className="text-sm text-slate-600 max-w-sm mt-2">
-                Thank you for reaching out! Our dispatch solutions team will contact you at <span className="font-semibold text-slate-800">{formData.email}</span> shortly.
+                Your email app should have opened with your request pre-filled. If not, send it to us directly:
               </p>
+              <div className="mt-4 flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                <a href={`mailto:${CONTACT_EMAIL}`} className="text-sm font-semibold text-slate-800">{CONTACT_EMAIL}</a>
+                <button type="button" onClick={copyEmail} className="text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">
+                  {copied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
               <button
                 onClick={() => {
                   setSubmitted(false);
@@ -155,7 +173,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                   className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-lg shadow-sm transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>Send Request</span>
+                  <span>Open Email Draft</span>
                 </button>
               </div>
             </form>

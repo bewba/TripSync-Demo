@@ -135,7 +135,7 @@ export default function LandingPage() {
       </Head>
 
       {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-300">
         <div className="max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-6 sm:px-8 h-16 flex items-center justify-between">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-3 group">
@@ -163,12 +163,13 @@ export default function LandingPage() {
             </nav>
 
             <div className="flex items-center gap-3">
-              <Link
-                href="/auth/active-drivers"
-                className="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm rounded-lg shadow-2xs transition-all active:scale-[0.98]"
+              <button
+                type="button"
+                onClick={() => setIsContactOpen(true)}
+                className="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm rounded-lg shadow-2xs transition-all active:scale-[0.98] cursor-pointer"
               >
-                Try Demo
-              </Link>
+                Schedule a Demo
+              </button>
             </div>
           </div>
         </div>
@@ -176,8 +177,8 @@ export default function LandingPage() {
 
       {/* Main Hero Section */}
       <main className="flex-1 overflow-x-clip">
-        <section className="bg-gradient-to-r from-[#059669] via-[#10b981] to-[#34d399] text-white pt-16 sm:pt-20 lg:pt-24 pb-20 sm:pb-28 lg:pb-36 relative overflow-visible">
-          {/* Dotted Logistics Route Network */}
+        <section className="bg-[#F8FAFC] pt-16 sm:pt-20 lg:pt-24 pb-12 sm:pb-14 lg:pb-16 relative overflow-visible">
+          {/* Subtle dotted logistics route network — slate toned for light bg */}
           <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
             <svg
               className="w-full h-full"
@@ -185,136 +186,52 @@ export default function LandingPage() {
               preserveAspectRatio="xMidYMid slice"
               xmlns="http://www.w3.org/2000/svg"
             >
-              {/* === DOTTED FREIGHT CORRIDOR LINES === */}
-              {/* Route 1: North Harbor to Northern Luzon Trunk */}
-              <path
-                d="M -100 130 C 280 50, 620 220, 1060 120 S 1520 40, 2040 160"
-                fill="none"
-                stroke="white"
-                strokeWidth="2.2"
-                strokeDasharray="10 8"
-                strokeOpacity="0.35"
-              />
-
-              {/* Route 2: Metro Manila Central Express Transit */}
-              <path
-                d="M -120 250 C 240 150, 560 370, 1020 220 S 1500 100, 2040 290"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeDasharray="8 6"
-                strokeOpacity="0.32"
-              />
-
-              {/* Route 3: SLEX Southern Luzon Freight Trunk */}
-              <path
-                d="M -60 380 C 320 280, 740 500, 1200 330 S 1680 180, 2160 410"
-                fill="none"
-                stroke="white"
-                strokeWidth="1.8"
-                strokeDasharray="6 6"
-                strokeOpacity="0.28"
-              />
-
-              {/* Route 4: Deep Southern Port Corridor to Batangas */}
-              <path
-                d="M 60 520 C 440 430, 860 620, 1360 450 S 1840 300, 2300 540"
-                fill="none"
-                stroke="white"
-                strokeWidth="1.6"
-                strokeDasharray="5 5"
-                strokeOpacity="0.25"
-              />
-
-              {/* Route 5: Cross-Arterial Orbital Ring Route */}
-              <path
-                d="M 140 -40 C 360 200, 680 360, 1120 540 S 1600 680, 1960 760"
-                fill="none"
-                stroke="white"
-                strokeWidth="1.6"
-                strokeDasharray="6 8"
-                strokeOpacity="0.26"
-              />
-
-              {/* Route 6: Coastal Express Tributary Connector */}
-              <path
-                d="M -60 580 C 360 440, 720 200, 1180 160 S 1640 250, 2060 90"
-                fill="none"
-                stroke="white"
-                strokeWidth="1.5"
-                strokeDasharray="4 6"
-                strokeOpacity="0.24"
-              />
-
-              {/* Route 7: Subic-Clark Upper Bypass Route */}
-              <path
-                d="M -40 50 C 380 160, 800 30, 1260 100 S 1700 50, 2080 80"
-                fill="none"
-                stroke="white"
-                strokeWidth="1.3"
-                strokeDasharray="4 5"
-                strokeOpacity="0.22"
-              />
-
-              {/* Route 8: Regional Feeder Corridor (Laguna/Cavite) */}
-              <path
-                d="M 300 680 C 680 550, 1080 610, 1480 450 S 1880 490, 2240 410"
-                fill="none"
-                stroke="white"
-                strokeWidth="1.3"
-                strokeDasharray="5 7"
-                strokeOpacity="0.22"
-              />
-
-              {/* Route 9: Secondary Diagonal Connector */}
-              <path
-                d="M 520 -20 C 660 180, 880 320, 1200 330 S 1580 460, 1920 540"
-                fill="none"
-                stroke="white"
-                strokeWidth="1.2"
-                strokeDasharray="4 4"
-                strokeOpacity="0.2"
-              />
-
-              {/* Route 10: Inland Freight Link */}
-              <path
-                d="M 800 750 C 1040 580, 1340 360, 1680 280 S 1980 210, 2140 180"
-                fill="none"
-                stroke="white"
-                strokeWidth="1.2"
-                strokeDasharray="6 6"
-                strokeOpacity="0.18"
-              />
+              {/* Route 1 */}
+              <path d="M -100 130 C 280 50, 620 220, 1060 120 S 1520 40, 2040 160" fill="none" stroke="#94a3b8" strokeWidth="1.6" strokeDasharray="10 8" strokeOpacity="0.25" />
+              {/* Route 2 */}
+              <path d="M -120 250 C 240 150, 560 370, 1020 220 S 1500 100, 2040 290" fill="none" stroke="#94a3b8" strokeWidth="1.4" strokeDasharray="8 6" strokeOpacity="0.2" />
+              {/* Route 3 */}
+              <path d="M -60 380 C 320 280, 740 500, 1200 330 S 1680 180, 2160 410" fill="none" stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="6 6" strokeOpacity="0.18" />
+              {/* Route 4 */}
+              <path d="M 60 520 C 440 430, 860 620, 1360 450 S 1840 300, 2300 540" fill="none" stroke="#94a3b8" strokeWidth="1.1" strokeDasharray="5 5" strokeOpacity="0.15" />
+              {/* Route 5 */}
+              <path d="M 140 -40 C 360 200, 680 360, 1120 540 S 1600 680, 1960 760" fill="none" stroke="#94a3b8" strokeWidth="1.1" strokeDasharray="6 8" strokeOpacity="0.15" />
+              {/* Route 6 */}
+              <path d="M -60 580 C 360 440, 720 200, 1180 160 S 1640 250, 2060 90" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="4 6" strokeOpacity="0.14" />
             </svg>
           </div>
 
           <div className="max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-6 sm:px-8 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-10 items-start">
-              {/* Hero Left Content - Pushed to the side in a compact column */}
+              {/* Hero Left Content */}
               <div className="lg:col-span-4 xl:col-span-3 2xl:col-span-3 flex flex-col z-10">
                 <motion.h1
                   variants={heroContainerVariants}
                   initial="hidden"
                   animate="visible"
-                  className="text-4xl sm:text-5xl lg:text-[42px] xl:text-[46px] 2xl:text-[50px] font-black text-white tracking-[-0.035em] leading-[1.04]"
+                  className="text-4xl sm:text-5xl lg:text-[42px] xl:text-[46px] 2xl:text-[50px] font-black tracking-[-0.035em] leading-[1.04]"
                 >
-                  {HERO_WORDS.map((word, i) => (
-                    <span key={i} className="inline-block overflow-hidden mr-[0.24em] last:mr-0 pb-1">
-                      <motion.span
-                        variants={heroWordVariants}
-                        className="inline-block will-change-transform"
-                      >
-                        {word}
-                      </motion.span>
-                    </span>
-                  ))}
+                  {HERO_WORDS.map((word, i) => {
+                    // "every liter." (last two words) get the green highlight
+                    const isHighlight = i >= 4;
+                    return (
+                      <span key={i} className="inline-block overflow-hidden mr-[0.24em] last:mr-0 pb-1">
+                        <motion.span
+                          variants={heroWordVariants}
+                          className={`inline-block will-change-transform ${isHighlight ? 'text-[#059669]' : 'text-[#0F172A]'}`}
+                        >
+                          {word}
+                        </motion.span>
+                      </span>
+                    );
+                  })}
                 </motion.h1>
 
                 <motion.p
                   initial={{ opacity: 0, y: 16, filter: 'blur(4px)' }}
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   transition={{ delay: 0.62, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                  className="mt-6 text-sm sm:text-base lg:text-[15px] xl:text-base text-emerald-50/90 leading-relaxed font-normal"
+                  className="mt-6 text-sm sm:text-base lg:text-[15px] xl:text-base text-[#64748B] leading-relaxed font-normal"
                 >
                   Real-time highway tracking, automated dispatch scheduling, and instantaneous stoppage and GPS blackout alerts for modern freight fleets.
                 </motion.p>
@@ -328,29 +245,28 @@ export default function LandingPage() {
                 >
                   <Link
                     href="/auth/active-drivers"
-                    className="px-5 sm:px-6 py-3.5 bg-white hover:bg-emerald-50 text-emerald-950 font-bold text-xs sm:text-sm rounded-lg shadow-sm hover:shadow active:scale-[0.98] transition-all duration-150 inline-flex items-center justify-center cursor-pointer whitespace-nowrap"
+                    className="px-5 sm:px-6 py-3.5 bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs sm:text-sm rounded-lg shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-150 inline-flex items-center justify-center cursor-pointer whitespace-nowrap"
                   >
                     Try the Demo
                   </Link>
 
                   <button
                     onClick={() => setIsContactOpen(true)}
-                    className="px-5 sm:px-6 py-3.5 bg-slate-950 hover:bg-slate-900 text-white font-semibold text-xs sm:text-sm rounded-lg border border-slate-800 shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-150 inline-flex items-center justify-center cursor-pointer whitespace-nowrap"
+                    className="px-5 sm:px-6 py-3.5 bg-white hover:bg-slate-50 text-[#0F172A] font-semibold text-xs sm:text-sm rounded-lg border border-slate-200 shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-150 inline-flex items-center justify-center cursor-pointer whitespace-nowrap"
                   >
                     Contact us
                   </button>
                 </motion.div>
               </div>
 
-              {/* Hero Right: Live Interactive Leaflet Map with Driver Roster Sidebar - Expanded wider on the right */}
+              {/* Hero Right: Live Interactive Leaflet Map */}
               <motion.div
                 initial={{ opacity: 0, y: 35, scale: 0.985 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ delay: 0.35, duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-                className="lg:col-span-8 xl:col-span-9 2xl:col-span-9 w-full relative z-20 translate-y-0 lg:-mb-28 sm:-mb-20 -mb-14"
+                className="lg:col-span-8 xl:col-span-9 2xl:col-span-9 w-full relative z-20"
               >
-                {/* Map Window Container: Contained horizontally, bleeding downward */}
-                <div className="w-full shadow-[0_30px_70px_-15px_rgba(0,0,0,0.4)] rounded-2xl ring-1 ring-white/25 overflow-hidden bg-white">
+                <div className="w-full shadow-[0_20px_60px_-10px_rgba(0,0,0,0.12)] rounded-2xl ring-1 ring-slate-200/80 overflow-hidden bg-white">
                   <LandingHeroMap />
                 </div>
               </motion.div>
@@ -359,7 +275,7 @@ export default function LandingPage() {
         </section>
 
         {/* Section 2: What Our Software Prevents */}
-        <section className="border-t border-slate-200/60 bg-[#f8fafc] pt-24 sm:pt-32 lg:pt-48 pb-20 sm:pb-28">
+        <section className="border-t border-slate-300 bg-[#f8fafc] pt-12 sm:pt-14 lg:pt-16 pb-20 sm:pb-28">
           <div className="max-w-7xl mx-auto px-6 sm:px-8">
             {/* Section Header */}
             <div className="max-w-2xl mb-14 sm:mb-18">
@@ -374,7 +290,7 @@ export default function LandingPage() {
             <div className="space-y-10 sm:space-y-14">
               {/* Card 1: Unauthorized Stoppages */}
               <ScrollReveal delay={0}>
-                <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
+                <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_6px_20px_-3px_rgba(15,23,42,0.14),0_3px_8px_rgba(15,23,42,0.08)] hover:shadow-[0_18px_38px_-4px_rgba(15,23,42,0.24),0_6px_14px_rgba(15,23,42,0.10)] transition-shadow duration-300 ease-out">
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                     {/* Left: Authentic Active Drivers App Embed (No floating pills) */}
                     <div className="lg:col-span-7">
@@ -478,7 +394,7 @@ export default function LandingPage() {
 
               {/* Card 2: GPS Signal Cutoffs & Tampering */}
               <ScrollReveal delay={100}>
-                <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
+                <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_6px_20px_-3px_rgba(15,23,42,0.14),0_3px_8px_rgba(15,23,42,0.08)] hover:shadow-[0_18px_38px_-4px_rgba(15,23,42,0.24),0_6px_14px_rgba(15,23,42,0.10)] transition-shadow duration-300 ease-out">
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                     {/* Left: Content */}
                     <div className="lg:col-span-5 flex flex-col justify-center order-2 lg:order-1">
@@ -582,7 +498,7 @@ export default function LandingPage() {
 
               {/* Card 3: Fuel Bleed & Siphon Loss */}
               <ScrollReveal delay={100}>
-                <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
+                <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_6px_20px_-3px_rgba(15,23,42,0.14),0_3px_8px_rgba(15,23,42,0.08)] hover:shadow-[0_18px_38px_-4px_rgba(15,23,42,0.24),0_6px_14px_rgba(15,23,42,0.10)] transition-shadow duration-300 ease-out">
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                     {/* Left: Authentic Analytics Chart Embed matching demo site */}
                     <div className="lg:col-span-7">
@@ -616,9 +532,9 @@ export default function LandingPage() {
 
 
         {/* Section 4: Bottom Call To Action */}
-        <section className="py-20 sm:py-28 bg-[#fafbfc] border-t border-slate-200/80">
+        <section className="py-20 sm:py-28 bg-[#fafbfc] border-t border-slate-300">
           <div className="max-w-5xl mx-auto px-6 sm:px-8">
-            <div className="rounded-3xl border border-slate-200/80 bg-white p-10 sm:p-16 text-center shadow-[0_2px_16px_rgba(0,0,0,0.03)]">
+            <div className="rounded-3xl border border-slate-200/80 bg-white p-10 sm:p-16 text-center shadow-[0_4px_16px_-2px_rgba(15,23,42,0.10),0_2px_4px_rgba(15,23,42,0.06)]">
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-[-0.03em]">
                 Ready to streamline your fleet operations?
               </h2>
@@ -647,7 +563,7 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200/60 bg-white py-10">
+      <footer className="border-t border-slate-300 bg-white py-10">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-full bg-white border border-slate-200 flex items-center justify-center p-1 shadow-2xs">
@@ -659,10 +575,6 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-6">
-            <div className="inline-flex items-center gap-2 text-[11px] font-medium text-slate-600 bg-slate-50 border border-slate-200/80 px-3 py-1 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              All systems operational
-            </div>
             <span>&copy; {new Date().getFullYear()} TripSync. All rights reserved.</span>
           </div>
         </div>
