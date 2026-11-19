@@ -84,7 +84,7 @@ const DEMO_FLEET_CONFIG: LandingDriverConfig[] = [
     corridor: 'McKinley • SLEX Corridor',
     baseSpeed: 64,
     stepPerPing: 2, // Fast cruising speed (2 points per ping)
-    speedMps: 17.8, // metres travelled per 1s ping
+    speedMps: 17.8, // cruising speed in metres/second
     startOffsetM: 3824, // spaced-out starting point along the route
     path: REAL_MCKINLEY_ROAD,
     status: 'online',
@@ -100,7 +100,7 @@ const DEMO_FLEET_CONFIG: LandingDriverConfig[] = [
     corridor: 'Ayala Ave • Buendia Freight',
     baseSpeed: 38,
     stepPerPing: 0.5, // Heavy tanker (1 point every 2 pings)
-    speedMps: 10.6, // metres travelled per 1s ping
+    speedMps: 10.6, // cruising speed in metres/second
     startOffsetM: 1238, // spaced-out starting point along the route
     path: REAL_AYALA_ROAD,
     status: 'online',
@@ -116,7 +116,7 @@ const DEMO_FLEET_CONFIG: LandingDriverConfig[] = [
     corridor: 'BGC 5th Ave Arterial',
     baseSpeed: 54,
     stepPerPing: 1, // Standard urban delivery speed (1 point per ping)
-    speedMps: 15.0, // metres travelled per 1s ping
+    speedMps: 15.0, // cruising speed in metres/second
     startOffsetM: 2496, // spaced-out starting point along the route
     path: REAL_BGC_ROAD,
     status: 'online',
@@ -147,7 +147,7 @@ const DEMO_FLEET_CONFIG: LandingDriverConfig[] = [
     corridor: 'EDSA Arterial • Buendia Flyover',
     baseSpeed: 48,
     stepPerPing: 1, // Standard cruising speed along EDSA corridor
-    speedMps: 13.3, // metres travelled per 1s ping
+    speedMps: 13.3, // cruising speed in metres/second
     startOffsetM: 4219, // spaced-out starting point along the route
     path: REAL_EDSA_ROAD,
     status: 'online',
@@ -174,20 +174,49 @@ export default function LandingHeroMap() {
   });
   const [timerTick, setTimerTick] = useState(0);
 
-  // 1-second telemetry ping: each driver advances by a small, realistic distance along the road
+  // Stopped-duration timer (1s)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimerTick((t) => t + 1);
+    const t = setInterval(() => setTimerTick((v) => v + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Independent, irregular telemetry pings per driver (each device reports on its own schedule).
+  // Distance per ping = current speed x time since that driver's previous ping, so it stays realistic.
+  useEffect(() => {
+    const state: Record<string, { last: number; next: number; speed: number }> = {};
+    const now0 = Date.now();
+    DEMO_FLEET_CONFIG.forEach((d, i) => {
+      state[d.tripId] = {
+        last: now0,
+        next: now0 + 600 + i * 450, // staggered first pings
+        speed: d.speedMps ?? 0,
+      };
+    });
+
+    const loop = setInterval(() => {
+      const now = Date.now();
+      const due = DEMO_FLEET_CONFIG.filter((d) => (d.speedMps ?? 0) > 0 && now >= state[d.tripId].next);
+      if (due.length === 0) return;
+
+      const moved: Record<string, number> = {};
+      due.forEach((d) => {
+        const st = state[d.tripId];
+        const base = d.speedMps ?? 0;
+        // speed wanders +/-12% around cruising speed (traffic, slopes), changing gradually
+        st.speed = Math.max(base * 0.8, Math.min(base * 1.2, st.speed + (Math.random() - 0.5) * base * 0.12));
+        moved[d.tripId] = st.speed * ((now - st.last) / 1000);
+        st.last = now;
+        st.next = now + 1500 + Math.random() * 1500; // next ping in 1.5-3s
+      });
+
       setDistances((prev) => {
-        const next: Record<string, number> = {};
-        DEMO_FLEET_CONFIG.forEach((driver) => {
-          next[driver.tripId] = (prev[driver.tripId] ?? 0) + (driver.speedMps ?? 0);
-        });
+        const next = { ...prev };
+        Object.keys(moved).forEach((id) => { next[id] = (prev[id] ?? 0) + moved[id]; });
         return next;
       });
-    }, 1000);
+    }, 250);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(loop);
   }, []);
 
   // Compute live coordinates and realistic individual speeds for each driver

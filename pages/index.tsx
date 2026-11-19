@@ -155,8 +155,14 @@ export default function LandingPage() {
           <div className="flex items-center gap-6 sm:gap-8">
             <nav className="flex items-center gap-6 sm:gap-8 text-sm font-medium text-slate-600">
               <a 
+                href="#why-tripsync" 
+                className="hover:text-slate-950 transition-colors cursor-pointer"
+              >
+                Why TripSync
+              </a>
+              <a 
                 href="#features" 
-                className="hover:text-slate-950 transition-colors scroll-smooth cursor-pointer"
+                className="hover:text-slate-950 transition-colors cursor-pointer"
               >
                 Features
               </a>
@@ -275,7 +281,7 @@ export default function LandingPage() {
         </section>
 
         {/* Section 2: What Our Software Prevents */}
-        <section className="border-t border-slate-300 bg-[#f8fafc] pt-12 sm:pt-14 lg:pt-16 pb-20 sm:pb-28">
+        <section id="why-tripsync" className="scroll-mt-16 border-t border-slate-300 bg-[#f8fafc] pt-12 sm:pt-14 lg:pt-16 pb-20 sm:pb-28">
           <div className="max-w-7xl mx-auto px-6 sm:px-8">
             {/* Section Header */}
             <div className="max-w-2xl mb-14 sm:mb-18">

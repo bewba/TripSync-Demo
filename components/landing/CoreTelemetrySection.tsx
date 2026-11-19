@@ -156,7 +156,7 @@ export default function CoreTelemetrySection() {
   };
 
   return (
-    <section id="features" className="bg-white border-t border-slate-300 pt-16 sm:pt-20 pb-24 sm:pb-32 relative">
+    <section id="features" className="scroll-mt-16 bg-white border-t border-slate-300 pt-16 sm:pt-20 pb-24 sm:pb-32 relative">
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
 
         {/* Section Header */}
