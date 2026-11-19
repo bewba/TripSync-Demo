@@ -381,16 +381,16 @@ export default function LandingPage() {
                     {/* Right: Text Description */}
                     <div className="lg:col-span-5 flex flex-col justify-center">
                       <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight leading-snug">
-                        Unauthorized stops flagged before dispatch even calls
+                        Unscheduled stops flagged before dispatch even calls
                       </h3>
 
                       <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
-                        When a truck sits outside an approved rest area for more than a few minutes, you know about it — not two hours later when someone notices fuel missing. TripSync calculates idle burn and logs the incident with exact timestamps for review.
+                        When a truck sits stationary or crawls along a route, it surfaces on your live map immediately — not hours later back at the depot. TripSync tracks live stop duration and logs every stoppage with exact coordinates and timestamps for post-trip review.
                       </p>
 
                       <div className="mt-6 flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-rose-700">
                         <CheckCircle2 className="w-4 h-4 text-rose-600 shrink-0" />
-                        <span>SMS &amp; webhook alerts on perimeter violations</span>
+                        <span>Live stop &amp; slow-movement flags with exact timestamps and map pins</span>
                       </div>
                     </div>
                   </div>
@@ -405,16 +405,16 @@ export default function LandingPage() {
                     {/* Left: Content */}
                     <div className="lg:col-span-5 flex flex-col justify-center order-2 lg:order-1">
                       <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight leading-snug">
-                        Know when a unit goes dark on purpose
+                        Know when a unit goes dark — and why
                       </h3>
 
                       <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
-                        Dead zones happen. Deliberate cuts are different. TripSync distinguishes between a cellular gap and an intentional hardware disconnect — and it alerts dispatch within seconds, not after the truck shows up at the depot.
+                        Low battery, signal drops, and disabled GPS look different on your map. TripSync monitors live connectivity, device battery, and GPS status together — flagging offline units and GPS-off events within a minute, not after the truck shows up at the depot.
                       </p>
 
                       <div className="mt-6 flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-amber-800">
                         <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
-                        <span>Last known coordinates preserved for every blackout event</span>
+                        <span>Last known coordinates, battery level &amp; GPS-off duration preserved on every trip</span>
                       </div>
                     </div>
 
@@ -514,16 +514,16 @@ export default function LandingPage() {
                     {/* Right: Text Description */}
                     <div className="lg:col-span-5 flex flex-col justify-center">
                       <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight leading-snug">
-                        The numbers don't lie — your receipts might
+                        The numbers don't lie — fuel requests might
                       </h3>
 
                       <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
-                        TripSync cross-checks pump receipts against live tank sensor readings. If your rig burned 38 liters more than it was dispatched with, that discrepancy shows up on your dashboard — with trip timestamps, route data, and a full audit trail attached.
+                        TripSync benchmarks every trip's fuel request against route-based consumption estimates — factoring in distance, elevation climb, vehicle specs, and load weight. When fuel requested doesn't match the route, the gap stands out on your dashboard with vehicle, driver, and trip data attached.
                       </p>
 
                       <div className="mt-6 flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-emerald-800">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span>Fuel consumption &amp; mileage analytics — audit-ready, trip by trip</span>
+                        <span>Fuel requested, consumption &amp; mileage analytics — broken down by vehicle and driver</span>
                       </div>
                     </div>
                   </div>
