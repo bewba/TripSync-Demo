@@ -125,7 +125,7 @@ export default function LandingPage() {
   const [isContactOpen, setIsContactOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] text-slate-900 selection:bg-slate-900 selection:text-white flex flex-col">
+    <div className="min-h-screen bg-[#f1f5f9] text-slate-900 selection:bg-slate-900 selection:text-white flex flex-col">
       <Head>
         <title>TripSync | Real-Time Fleet &amp; Fuel Telemetry</title>
         <meta 
@@ -133,10 +133,12 @@ export default function LandingPage() {
           content="Track your drivers and fuel consumption in a few clicks. Real-time highway tracking, automated trip scheduling, and instantaneous stoppage and GPS blackout alerts for modern fleets." 
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/png" href="/logo-circle-light.png" />
+        <link rel="apple-touch-icon" href="/logo-circle-light.png" />
       </Head>
 
       {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-300">
+      <header className="sticky top-0 z-40 bg-[#f1f5f9]/85 backdrop-blur-md border-b border-slate-300/80">
         <div className="max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-6 sm:px-8 h-16 flex items-center justify-between">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-3 group">
@@ -190,7 +192,7 @@ export default function LandingPage() {
 
       {/* Main Hero Section */}
       <main className="flex-1 overflow-x-clip">
-        <section className="bg-[#F8FAFC] pt-16 sm:pt-20 lg:pt-24 pb-12 sm:pb-14 lg:pb-16 relative overflow-visible">
+        <section className="bg-[#f1f5f9] pt-16 sm:pt-20 lg:pt-24 pb-12 sm:pb-14 lg:pb-16 relative overflow-visible">
           {/* Subtle dashed logistics route network with navigation arrowheads */}
           <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
             <svg
@@ -213,7 +215,7 @@ export default function LandingPage() {
                 >
                   <path
                     d="M 3.5 4 L 20.5 12 L 3.5 20 L 8.5 12 Z"
-                    fill="#F8FAFC"
+                    fill="#f1f5f9"
                     stroke="#94a3b8"
                     strokeWidth="1.8"
                     strokeLinejoin="round"
@@ -360,7 +362,7 @@ export default function LandingPage() {
         </section>
 
         {/* Section 2: What Our Software Prevents */}
-        <section id="why-tripsync" className="scroll-mt-16 border-t border-slate-300 bg-[#f8fafc] pt-12 sm:pt-14 lg:pt-16 pb-20 sm:pb-28">
+        <section id="why-tripsync" className="scroll-mt-16 border-t border-slate-300/80 bg-[#e8eef5] pt-12 sm:pt-14 lg:pt-16 pb-20 sm:pb-28">
           <div className="max-w-7xl mx-auto px-6 sm:px-8">
             {/* Section Header */}
             <div className="max-w-2xl mb-14 sm:mb-18">
@@ -597,7 +599,7 @@ export default function LandingPage() {
                       </h3>
 
                       <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
-                        TripSync benchmarks every trip's fuel request against route-based consumption estimates — factoring in distance, elevation climb, vehicle specs, and load weight. When fuel requested doesn't match the route, the gap stands out on your dashboard with vehicle, driver, and trip data attached.
+                        TripSync benchmarks every trip's fuel request against route-based consumption estimates — factoring in distance, vehicle specs, and load weight. When fuel requested doesn't match the route, the gap stands out on your dashboard with vehicle, driver, and trip data attached.
                       </p>
 
                       <div className="mt-6 flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-emerald-800">
@@ -619,7 +621,7 @@ export default function LandingPage() {
         <HowItWorksSection />
 
         {/* Section 5: Bottom Call To Action */}
-        <section className="py-20 sm:py-28 bg-[#fafbfc] border-t border-slate-300">
+        <section className="py-20 sm:py-28 bg-[#f1f5f9] border-t border-slate-300/80">
           <div className="max-w-5xl mx-auto px-6 sm:px-8">
             <div className="rounded-3xl border border-slate-200/80 bg-white p-10 sm:p-16 text-center shadow-[0_4px_16px_-2px_rgba(15,23,42,0.10),0_2px_4px_rgba(15,23,42,0.06)]">
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-[-0.03em]">
@@ -650,7 +652,7 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-300 bg-white py-10">
+      <footer className="border-t border-slate-300/80 bg-[#e8eef5] py-10">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-full bg-white border border-slate-200 flex items-center justify-center p-1 shadow-2xs">

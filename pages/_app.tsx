@@ -26,9 +26,11 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
       <QueryProvider>
         <div className="min-h-screen flex flex-col lg:flex-row bg-background">
           <Head>
-            <title>Fleet Manager</title>
+            <title>TripSync | Fleet Manager</title>
             <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <link rel="icon" href="/favicon.ico" />
+            <link rel="icon" type="image/png" href="/logo-circle-light.png" />
+            <link rel="shortcut icon" type="image/png" href="/logo-circle-light.png" />
+            <link rel="apple-touch-icon" href="/logo-circle-light.png" />
           </Head>
 
           {isAuthPage ? (

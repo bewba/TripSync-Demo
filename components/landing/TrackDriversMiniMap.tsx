@@ -58,11 +58,20 @@ const DRIVERS: TrackDriverItem[] = [
 interface TrackDriversMiniMapProps {
   selectedDriverId?: string;
   onSelectDriver?: (id: string) => void;
+  randomizePositions?: boolean;
 }
+
+// Organic spread anchor zones across Metro Manila when randomized
+const SPREAD_ANCHORS: Record<string, { lat: number; lng: number }> = {
+  juan: { lat: 14.558, lng: 121.022 },  // Makati CBD
+  ramon: { lat: 14.584, lng: 121.061 }, // Ortigas / Pasig
+  arnel: { lat: 14.524, lng: 121.044 }, // Taguig / C5 South
+};
 
 function TrackDriversMiniMapInner({
   selectedDriverId = 'juan',
   onSelectDriver,
+  randomizePositions = false,
 }: TrackDriversMiniMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -107,8 +116,21 @@ function TrackDriversMiniMapInner({
             attribution: '&copy; OpenStreetMap contributors',
           }).addTo(map);
 
+          const activeDrivers = randomizePositions
+            ? DRIVERS.map((d) => {
+                const base = SPREAD_ANCHORS[d.id] || { lat: d.lat, lng: d.lng };
+                const jitterLat = (Math.random() - 0.5) * 0.014;
+                const jitterLng = (Math.random() - 0.5) * 0.016;
+                return {
+                  ...d,
+                  lat: base.lat + jitterLat,
+                  lng: base.lng + jitterLng,
+                };
+              })
+            : DRIVERS;
+
           // Build custom markers matching the actual app ActiveDriversMap icon design
-          DRIVERS.forEach((driver) => {
+          activeDrivers.forEach((driver) => {
             const size = 32;
 
             const iconHtml = `
@@ -149,25 +171,30 @@ function TrackDriversMiniMapInner({
             markersRef.current.set(driver.id, marker);
           });
 
-          // Draw an authentic subtle connecting corridor polyline
-          const polylineCoords: [number, number][] = [
-            [14.5450, 121.0220],
-            [14.5480, 121.0260],
-            [14.5515, 121.0310],
-            [14.5540, 121.0345],
-            [14.5570, 121.0385],
-          ];
+          // Draw an authentic subtle connecting corridor polyline (only on default corridor mode)
+          if (!randomizePositions) {
+            const polylineCoords: [number, number][] = [
+              [14.5450, 121.0220],
+              [14.5480, 121.0260],
+              [14.5515, 121.0310],
+              [14.5540, 121.0345],
+              [14.5570, 121.0385],
+            ];
 
-          L.polyline(polylineCoords, {
-            color: '#3b82f6',
-            weight: 3,
-            opacity: 0.45,
-            dashArray: '6, 6',
-          }).addTo(map);
+            L.polyline(polylineCoords, {
+              color: '#3b82f6',
+              weight: 3,
+              opacity: 0.45,
+              dashArray: '6, 6',
+            }).addTo(map);
+          }
 
           // Fit bounds initially with gentle padding to display all drivers comfortably
-          const bounds = L.latLngBounds(DRIVERS.map((d) => [d.lat, d.lng] as [number, number]));
-          map.fitBounds(bounds, { padding: [32, 32], maxZoom: 14 });
+          const bounds = L.latLngBounds(activeDrivers.map((d) => [d.lat, d.lng] as [number, number]));
+          map.fitBounds(bounds, {
+            padding: randomizePositions ? [48, 48] : [32, 32],
+            maxZoom: randomizePositions ? 13 : 14,
+          });
 
           // Debounced ResizeObserver — prevents rapid invalidateSize from triggering jitter
           observer = new ResizeObserver(() => {
