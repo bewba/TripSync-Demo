@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import ContactModal from '@/components/landing/ContactModal';
 import CoreTelemetrySection from '@/components/landing/CoreTelemetrySection';
+import HowItWorksSection from '@/components/landing/HowItWorksSection';
 
 // Dynamically load interactive hero map with SSR turned off
 const LandingHeroMap = dynamic(() => import('@/components/landing/LandingHeroMap'), {
@@ -129,7 +130,7 @@ export default function LandingPage() {
         <title>TripSync | Real-Time Fleet &amp; Fuel Telemetry</title>
         <meta 
           name="description" 
-          content="Track your drivers and fuel consumption in a few clicks. Real-time highway tracking, automated dispatch scheduling, and instantaneous stoppage and GPS blackout alerts for modern freight fleets." 
+          content="Track your drivers and fuel consumption in a few clicks. Real-time highway tracking, automated trip scheduling, and instantaneous stoppage and GPS blackout alerts for modern fleets." 
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
@@ -165,6 +166,12 @@ export default function LandingPage() {
                 className="hover:text-slate-950 transition-colors cursor-pointer"
               >
                 Features
+              </a>
+              <a 
+                href="#how-it-works" 
+                className="hover:text-slate-950 transition-colors cursor-pointer"
+              >
+                How it Works
               </a>
             </nav>
 
@@ -211,7 +218,7 @@ export default function LandingPage() {
                     strokeWidth="1.8"
                     strokeLinejoin="round"
                     strokeLinecap="round"
-                    strokeOpacity="0.45"
+                    strokeOpacity="0.2"
                   />
                 </marker>
               </defs>
@@ -223,7 +230,7 @@ export default function LandingPage() {
                 stroke="#94a3b8"
                 strokeWidth="1.6"
                 strokeDasharray="24 10"
-                strokeOpacity="0.28"
+                strokeOpacity="0.12"
                 markerEnd="url(#nav-arrow)"
               />
               {/* Route 2 — Mid-left sweep behind hero copy */}
@@ -233,7 +240,7 @@ export default function LandingPage() {
                 stroke="#94a3b8"
                 strokeWidth="1.5"
                 strokeDasharray="22 9"
-                strokeOpacity="0.24"
+                strokeOpacity="0.1"
                 markerEnd="url(#nav-arrow)"
               />
               {/* Route 3 — Lower-left sweep below hero CTA */}
@@ -243,7 +250,7 @@ export default function LandingPage() {
                 stroke="#94a3b8"
                 strokeWidth="1.5"
                 strokeDasharray="22 10"
-                strokeOpacity="0.26"
+                strokeOpacity="0.11"
                 markerEnd="url(#nav-arrow)"
               />
               {/* Route 4 — Long diagonal down the left margin */}
@@ -253,7 +260,7 @@ export default function LandingPage() {
                 stroke="#94a3b8"
                 strokeWidth="1.3"
                 strokeDasharray="20 10"
-                strokeOpacity="0.2"
+                strokeOpacity="0.09"
                 markerEnd="url(#nav-arrow)"
               />
               {/* Route 5 — Long sweep along bottom strip */}
@@ -263,7 +270,7 @@ export default function LandingPage() {
                 stroke="#94a3b8"
                 strokeWidth="1.4"
                 strokeDasharray="24 10"
-                strokeOpacity="0.22"
+                strokeOpacity="0.1"
                 markerEnd="url(#nav-arrow)"
               />
               {/* Route 6 — Right-edge sweeping route */}
@@ -273,7 +280,7 @@ export default function LandingPage() {
                 stroke="#94a3b8"
                 strokeWidth="1.3"
                 strokeDasharray="20 9"
-                strokeOpacity="0.2"
+                strokeOpacity="0.09"
                 markerEnd="url(#nav-arrow)"
               />
             </svg>
@@ -358,7 +365,7 @@ export default function LandingPage() {
             {/* Section Header */}
             <div className="max-w-2xl mb-14 sm:mb-18">
               <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-slate-950 tracking-[-0.03em]">
-                What TripSync Prevents
+                What TripSync <span className="text-[#059669]">Prevents</span>
               </h2>
               <p className="mt-3 text-base sm:text-lg text-slate-600 leading-relaxed">
                 Unscheduled stops, disabled GPS, and padded fuel requests rarely announce themselves. TripSync catches them on the first trip—before they become a pattern.
@@ -453,7 +460,7 @@ export default function LandingPage() {
                     {/* Right: Text Description */}
                     <div className="lg:col-span-5 flex flex-col justify-center">
                       <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight leading-snug">
-                        Unscheduled stops flagged before dispatch even calls
+                        Unscheduled stops flagged before your admin even calls
                       </h3>
 
                       <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
@@ -608,8 +615,10 @@ export default function LandingPage() {
         {/* Section 3: Core Fleet Telemetry Features (Stripe-style card grid) */}
         <CoreTelemetrySection />
 
+        {/* Section 4: How It Works (App + Browser Zero-Hardware Setup) */}
+        <HowItWorksSection />
 
-        {/* Section 4: Bottom Call To Action */}
+        {/* Section 5: Bottom Call To Action */}
         <section className="py-20 sm:py-28 bg-[#fafbfc] border-t border-slate-300">
           <div className="max-w-5xl mx-auto px-6 sm:px-8">
             <div className="rounded-3xl border border-slate-200/80 bg-white p-10 sm:p-16 text-center shadow-[0_4px_16px_-2px_rgba(15,23,42,0.10),0_2px_4px_rgba(15,23,42,0.06)]">
@@ -617,7 +626,7 @@ export default function LandingPage() {
                 Ready to streamline your fleet operations?
               </h2>
               <p className="mt-3.5 text-sm sm:text-base text-slate-500 max-w-xl mx-auto leading-relaxed">
-                Experience real-time telemetry dispatch or speak with our logistics solutions team.
+                Try the live admin dashboard or speak with our logistics solutions team.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4">

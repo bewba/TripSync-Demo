@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
 
 type FeatureType = 'fuel' | 'distance';
 
@@ -212,6 +213,33 @@ const FEATURES: FeatureConfig[] = [
   },
 ];
 
+const DRIVER_OPTIONS = Array.from(
+  new Set(CHART_POINTS.map((p) => p.driver).filter((d) => d !== 'Assigned Driver'))
+);
+const TRUCK_OPTIONS = Array.from(new Set(CHART_POINTS.map((p) => p.vehicle)));
+
+function buildSmoothPaths(points: { x: number; y: number }[]) {
+  if (points.length === 0) return { strokePath: '', areaPath: '' };
+  if (points.length === 1) {
+    const p = points[0];
+    return {
+      strokePath: `M ${p.x} ${p.y} L ${p.x} ${p.y}`,
+      areaPath: '',
+    };
+  }
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const midX = (prev.x + curr.x) / 2;
+    d += ` C ${midX} ${prev.y}, ${midX} ${curr.y}, ${curr.x} ${curr.y}`;
+  }
+  const first = points[0];
+  const last = points[points.length - 1];
+  const area = `${d} L ${last.x} 225 L ${first.x} 225 Z`;
+  return { strokePath: d, areaPath: area };
+}
+
 interface LandingAnalyticsChartProps {
   compact?: boolean;
 }
@@ -219,14 +247,60 @@ interface LandingAnalyticsChartProps {
 export default function LandingAnalyticsChart({ compact = false }: LandingAnalyticsChartProps = {}) {
   // Fuel Consumed as the default feature
   const [activeFeature, setActiveFeature] = useState<FeatureType>('fuel');
+  const [selectedDriver, setSelectedDriver] = useState<string>('all');
+  const [selectedTruck, setSelectedTruck] = useState<string>('all');
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, amount: 0.2 });
 
   const currentFeature = FEATURES.find((f) => f.id === activeFeature) || FEATURES[0];
+  const isFiltered = selectedDriver !== 'all' || selectedTruck !== 'all';
 
-  const isHovered = hoveredIndex !== null;
-  const activePoint = isHovered ? CHART_POINTS[hoveredIndex] : CHART_POINTS[DEFAULT_POINT_INDEX];
+  const visiblePoints = useMemo(() => {
+    return CHART_POINTS.filter((pt) => {
+      const matchDriver = selectedDriver === 'all' || pt.driver === selectedDriver;
+      const matchTruck = selectedTruck === 'all' || pt.vehicle === selectedTruck;
+      return matchDriver && matchTruck;
+    });
+  }, [selectedDriver, selectedTruck]);
+
+  const { strokePath, areaPath, displayTotal, tripCount } = useMemo(() => {
+    if (!isFiltered) {
+      return {
+        strokePath: currentFeature.strokePath,
+        areaPath: currentFeature.areaPath,
+        displayTotal: currentFeature.totalValue,
+        tripCount: 15,
+      };
+    }
+
+    const total = visiblePoints.reduce((sum, pt) => {
+      const raw = activeFeature === 'fuel' ? pt.fuelValue : pt.distValue;
+      return sum + (parseFloat(raw) || 0);
+    }, 0);
+
+    const coords = visiblePoints.map((pt) => ({
+      x: pt.x,
+      y: activeFeature === 'fuel' ? pt.fuelY : pt.distY,
+    }));
+    const paths = buildSmoothPaths(coords);
+
+    return {
+      strokePath: paths.strokePath,
+      areaPath: paths.areaPath,
+      displayTotal: total.toFixed(2),
+      tripCount: visiblePoints.length,
+    };
+  }, [isFiltered, visiblePoints, activeFeature, currentFeature]);
+
+  const hasPoints = visiblePoints.length > 0;
+  const isHovered = hoveredIndex !== null && hoveredIndex < visiblePoints.length;
+  const defaultIdx = isFiltered
+    ? Math.floor(visiblePoints.length / 2)
+    : DEFAULT_POINT_INDEX;
+  const activePoint = hasPoints
+    ? visiblePoints[isHovered ? hoveredIndex : defaultIdx] || visiblePoints[0]
+    : CHART_POINTS[DEFAULT_POINT_INDEX];
   const activeY = activeFeature === 'fuel' ? activePoint.fuelY : activePoint.distY;
 
   // Spaced date labels along the X-axis
@@ -241,13 +315,14 @@ export default function LandingAnalyticsChart({ compact = false }: LandingAnalyt
   const yPositions = [18, 70, 122, 174, 225];
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!hasPoints) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const svgX = (mouseX / rect.width) * 760;
 
     let closestIdx = 0;
     let minDiff = Infinity;
-    CHART_POINTS.forEach((pt, idx) => {
+    visiblePoints.forEach((pt, idx) => {
       const diff = Math.abs(pt.x - svgX);
       if (diff < minDiff) {
         minDiff = diff;
@@ -263,14 +338,14 @@ export default function LandingAnalyticsChart({ compact = false }: LandingAnalyt
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!e.touches[0]) return;
+    if (!e.touches[0] || !hasPoints) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const touchX = e.touches[0].clientX - rect.left;
     const svgX = (touchX / rect.width) * 760;
 
     let closestIdx = 0;
     let minDiff = Infinity;
-    CHART_POINTS.forEach((pt, idx) => {
+    visiblePoints.forEach((pt, idx) => {
       const diff = Math.abs(pt.x - svgX);
       if (diff < minDiff) {
         minDiff = diff;
@@ -290,12 +365,131 @@ export default function LandingAnalyticsChart({ compact = false }: LandingAnalyt
           : 'rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-6'
       }`}
     >
-      {/* Top Metric Header & Interactive Feature Switcher */}
+      {/* Top Controls Bar: Driver, Truck & Metric Switcher aligned on one row above the metric header */}
       <div
-        className={`flex items-start justify-between gap-2 ${
-          compact ? 'mb-2' : 'flex-col sm:flex-row sm:items-start mb-4 sm:mb-6'
+        className={`flex flex-wrap items-end justify-between border-b border-slate-100 ${
+          compact ? 'gap-1.5 mb-2.5 pb-2' : 'gap-2.5 mb-4 pb-3.5'
         }`}
       >
+        {/* Left: Driver & Truck Dropdowns */}
+        <div className={`grid grid-cols-2 flex-1 min-w-0 ${compact ? 'gap-1.5' : 'gap-2.5 sm:max-w-[330px]'}`}>
+          {/* Driver Filter */}
+          <div className="min-w-0">
+            <label
+              className={`block font-bold uppercase tracking-wider text-slate-400 ${
+                compact ? 'text-[8px] mb-0.5' : 'text-[10px] mb-1'
+              }`}
+            >
+              Driver
+            </label>
+            <div className="relative">
+              <select
+                aria-label="Filter by driver"
+                value={selectedDriver}
+                onChange={(e) => {
+                  setSelectedDriver(e.target.value);
+                  setHoveredIndex(null);
+                }}
+                className={`w-full appearance-none bg-white border border-slate-200 hover:border-slate-300 rounded-lg font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors cursor-pointer truncate ${
+                  compact
+                    ? 'h-7 pl-2 pr-5 text-[10px]'
+                    : 'h-9 pl-2.5 pr-7 text-xs'
+                }`}
+              >
+                <option value="all">All Drivers</option>
+                {DRIVER_OPTIONS.map((driver) => (
+                  <option key={driver} value={driver}>
+                    {driver}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                className={`pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 ${
+                  compact ? 'w-3 h-3' : 'w-3.5 h-3.5'
+                }`}
+              />
+            </div>
+          </div>
+
+          {/* Truck Filter */}
+          <div className="min-w-0">
+            <label
+              className={`block font-bold uppercase tracking-wider text-slate-400 ${
+                compact ? 'text-[8px] mb-0.5' : 'text-[10px] mb-1'
+              }`}
+            >
+              Truck
+            </label>
+            <div className="relative">
+              <select
+                aria-label="Filter by truck"
+                value={selectedTruck}
+                onChange={(e) => {
+                  setSelectedTruck(e.target.value);
+                  setHoveredIndex(null);
+                }}
+                className={`w-full appearance-none bg-white border border-slate-200 hover:border-slate-300 rounded-lg font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors cursor-pointer truncate ${
+                  compact
+                    ? 'h-7 pl-2 pr-5 text-[10px]'
+                    : 'h-9 pl-2.5 pr-7 text-xs'
+                }`}
+              >
+                <option value="all">All Trucks</option>
+                {TRUCK_OPTIONS.map((truck) => (
+                  <option key={truck} value={truck}>
+                    {truck}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                className={`pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 ${
+                  compact ? 'w-3 h-3' : 'w-3.5 h-3.5'
+                }`}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Metric Switcher (Fuel Consumed & Distance Covered) aligned to same height */}
+        <div className="shrink-0">
+          <span
+            className={`block font-bold uppercase tracking-wider text-slate-400 ${
+              compact ? 'text-[8px] mb-0.5' : 'text-[10px] mb-1'
+            }`}
+          >
+            Metric
+          </span>
+          <div
+            className={`grid grid-cols-2 gap-0.5 bg-slate-100 rounded-lg border border-slate-200/80 ${
+              compact ? 'h-7 p-0.5' : 'h-9 p-1'
+            }`}
+          >
+            {FEATURES.map((feat) => {
+              const isActive = activeFeature === feat.id;
+              return (
+                <button
+                  key={feat.id}
+                  onClick={() => setActiveFeature(feat.id)}
+                  className={`font-bold rounded-md transition-all duration-150 cursor-pointer whitespace-nowrap text-center flex items-center justify-center ${
+                    compact ? 'px-2 text-[9px]' : 'px-2.5 text-[11px]'
+                  } ${
+                    isActive
+                      ? feat.id === 'fuel'
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                  }`}
+                >
+                  {feat.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Metric Header */}
+      <div className={compact ? 'mb-2' : 'mb-4 sm:mb-5'}>
         <div className="min-w-0">
           <p
             className={`font-bold uppercase tracking-widest text-slate-900 font-sans ${
@@ -309,7 +503,7 @@ export default function LandingAnalyticsChart({ compact = false }: LandingAnalyt
               compact ? 'text-lg sm:text-xl' : 'text-2xl sm:text-4xl'
             }`}
           >
-            {currentFeature.totalValue}{' '}
+            {displayTotal}{' '}
             <span
               className={`font-semibold text-slate-400 font-sans ml-1 ${
                 compact ? 'text-[10px]' : 'text-sm sm:text-base'
@@ -323,36 +517,8 @@ export default function LandingAnalyticsChart({ compact = false }: LandingAnalyt
               compact ? 'text-[9px] mt-0' : 'text-xs sm:text-sm mt-0.5'
             }`}
           >
-            across <span className="font-bold text-slate-700">15</span> trips
+            across <span className="font-bold text-slate-700">{tripCount}</span> {tripCount === 1 ? 'trip' : 'trips'}
           </p>
-        </div>
-
-        {/* Feature Switcher Tabs - 2 tabs: Fuel Consumed & Distance Covered */}
-        <div
-          className={`grid grid-cols-2 gap-1 p-0.5 sm:p-1 bg-slate-100 rounded-lg sm:rounded-xl border border-slate-200/70 shrink-0 self-start ${
-            compact ? 'w-[170px] sm:w-[190px]' : 'w-full sm:w-[280px]'
-          }`}
-        >
-          {FEATURES.map((feat) => {
-            const isActive = activeFeature === feat.id;
-            return (
-              <button
-                key={feat.id}
-                onClick={() => setActiveFeature(feat.id)}
-                className={`font-bold rounded-md sm:rounded-lg transition-all duration-150 cursor-pointer whitespace-nowrap text-center ${
-                  compact ? 'py-1 px-1.5 text-[9px] sm:text-[10px]' : 'py-2 px-3 text-xs'
-                } ${
-                  isActive
-                    ? feat.id === 'fuel'
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'bg-blue-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-                }`}
-              >
-                {feat.label}
-              </button>
-            );
-          })}
         </div>
       </div>
 
@@ -408,41 +574,47 @@ export default function LandingAnalyticsChart({ compact = false }: LandingAnalyt
           ))}
 
           {/* Animated Area Gradient Fill */}
-          <motion.path
-            key={`area-${activeFeature}`}
-            d={currentFeature.areaPath}
-            fill={`url(#${currentFeature.gradientId})`}
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 1.4, delay: 1.2 }}
-          />
+          {hasPoints && areaPath && (
+            <motion.path
+              key={`area-${activeFeature}-${selectedDriver}-${selectedTruck}`}
+              d={areaPath}
+              fill={`url(#${currentFeature.gradientId})`}
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+              transition={{ duration: isFiltered ? 0.35 : 1.4, delay: isFiltered ? 0 : 1.2 }}
+            />
+          )}
 
           {/* Animated Stroke Curve - draws line smoothly and noticeably slower */}
-          <motion.path
-            key={`stroke-${activeFeature}`}
-            d={currentFeature.strokePath}
-            fill="none"
-            stroke={currentFeature.color}
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            initial={{ pathLength: 0 }}
-            animate={isInView ? { pathLength: 1 } : { pathLength: 0 }}
-            transition={{ duration: 2.8, ease: [0.22, 1, 0.36, 1] }}
-          />
+          {hasPoints && strokePath && (
+            <motion.path
+              key={`stroke-${activeFeature}-${selectedDriver}-${selectedTruck}`}
+              d={strokePath}
+              fill="none"
+              stroke={currentFeature.color}
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              initial={{ pathLength: 0 }}
+              animate={isInView ? { pathLength: 1 } : { pathLength: 0 }}
+              transition={{ duration: isFiltered ? 0.6 : 2.8, ease: [0.22, 1, 0.36, 1] }}
+            />
+          )}
 
           {/* Vertical Cursor Guide Rule at Active Point */}
-          <line
-            x1={activePoint.x}
-            y1="18"
-            x2={activePoint.x}
-            y2="225"
-            stroke="#94a3b8"
-            strokeWidth="1"
-            strokeDasharray={isHovered ? '3 3' : undefined}
-          />
+          {hasPoints && (
+            <line
+              x1={activePoint.x}
+              y1="18"
+              x2={activePoint.x}
+              y2="225"
+              stroke="#94a3b8"
+              strokeWidth="1"
+              strokeDasharray={isHovered ? '3 3' : undefined}
+            />
+          )}
 
           {/* Hover Halo Ring */}
-          {isHovered && (
+          {hasPoints && isHovered && (
             <circle
               cx={activePoint.x}
               cy={activeY}
@@ -453,18 +625,20 @@ export default function LandingAnalyticsChart({ compact = false }: LandingAnalyt
           )}
 
           {/* Active Marker Dot */}
-          <motion.circle
-            key={`circle-${activeFeature}-${activePoint.x}`}
-            cx={activePoint.x}
-            cy={activeY}
-            r="4.5"
-            fill={currentFeature.color}
-            stroke="#ffffff"
-            strokeWidth="2.5"
-            initial={{ scale: 0.8, opacity: 0.8 }}
-            animate={isInView ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
-            transition={{ duration: 0.15 }}
-          />
+          {hasPoints && (
+            <motion.circle
+              key={`circle-${activeFeature}-${activePoint.x}-${selectedDriver}-${selectedTruck}`}
+              cx={activePoint.x}
+              cy={activeY}
+              r="4.5"
+              fill={currentFeature.color}
+              stroke="#ffffff"
+              strokeWidth="2.5"
+              initial={{ scale: 0.8, opacity: 0.8 }}
+              animate={isInView ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            />
+          )}
 
           {/* Clean Spaced X-Axis Dates */}
           {dateTicks.map(({ date, x, anchor }) => (
@@ -483,10 +657,10 @@ export default function LandingAnalyticsChart({ compact = false }: LandingAnalyt
           ))}
 
           {/* Transparent interactive vertical slices for accurate hit-testing */}
-          {CHART_POINTS.map((pt, i) => {
-            const prevX = i === 0 ? 0 : (CHART_POINTS[i - 1].x + pt.x) / 2;
+          {visiblePoints.map((pt, i) => {
+            const prevX = i === 0 ? 0 : (visiblePoints[i - 1].x + pt.x) / 2;
             const nextX =
-              i === CHART_POINTS.length - 1 ? 760 : (CHART_POINTS[i + 1].x + pt.x) / 2;
+              i === visiblePoints.length - 1 ? 760 : (visiblePoints[i + 1].x + pt.x) / 2;
             return (
               <rect
                 key={`slice-${pt.shortDate}`}
@@ -502,10 +676,30 @@ export default function LandingAnalyticsChart({ compact = false }: LandingAnalyt
           })}
         </svg>
 
+        {/* Empty Filter State */}
+        {!hasPoints && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/85 backdrop-blur-[1px] rounded-xl text-center px-4">
+            <p className="text-xs font-bold text-slate-700">
+              No trips match this driver &amp; truck filter
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedDriver('all');
+                setSelectedTruck('all');
+              }}
+              className="mt-2 px-3 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-semibold cursor-pointer transition-colors"
+            >
+              Reset filters
+            </button>
+          </div>
+        )}
+
         {/* Floating Tooltip Card:
-            - When NOT hovered: Stays at the default position at October 7, 2026.
+            - When NOT hovered: Stays at the default position.
             - When hovered: Default popup is replaced by the hovered point's popup, dynamically positioned.
         */}
+        {hasPoints && (
         <div
           className={`absolute top-1 sm:top-2 z-20 bg-white/95 backdrop-blur-[2px] border border-slate-200/90 rounded-xl shadow-lg font-semibold text-slate-800 pointer-events-none transition-all duration-150 ease-out ${
             compact
@@ -626,6 +820,7 @@ export default function LandingAnalyticsChart({ compact = false }: LandingAnalyt
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

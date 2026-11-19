@@ -122,10 +122,11 @@ export default function CoreTelemetrySection() {
         {/* Section Header */}
         <div className="max-w-2xl mb-12 sm:mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-slate-950 tracking-[-0.03em] leading-tight">
-            Everything you need to monitor, dispatch, and audit your fleet
+            Everything you need to{' '}
+            <span className="text-[#059669]">monitor, assign, and audit</span> your fleet
           </h2>
           <p className="mt-3.5 text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-            Built for precision control room dispatch, real-time highway monitoring, and strict fuel audit compliance.
+            Built for easy admin monitoring, real-time highway tracking, and strict fuel audit compliance.
           </p>
         </div>
 
@@ -902,8 +903,8 @@ export default function CoreTelemetrySection() {
             {/* Title row */}
             <div className="px-6 pt-5 pb-3 flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-950 tracking-tight leading-snug">Dispatch trips in seconds</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Two-step workflow: configure route &amp; fleet, review auto-computed fuel, and dispatch instantly.</p>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-950 tracking-tight leading-snug">Assign trips in seconds</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Two-step workflow: configure route &amp; fleet, review auto-computed fuel, and send to your driver instantly.</p>
               </div>
               <Link href="/auth/plan-trip" aria-label="Open Plan Trip" className="w-7 h-7 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors shrink-0">
                 <Maximize2 className="w-3 h-3" />
