@@ -580,45 +580,33 @@ export default function LandingPage() {
               </ScrollReveal>
 
 
-              {/* Card 3: Fuel Bleed & Siphon Loss (Overlapping Core Telemetry Lighter Green Background) */}
-              <div className="relative">
-                {/* Lighter Green Background extending from 50% height of Card 3 through bottom of section */}
-                <div
-                  className="absolute inset-x-0 top-1/2 bottom-0 bg-emerald-600 pointer-events-none -mb-20 sm:-mb-28"
-                  style={{
-                    left: 'calc(-50vw + 50%)',
-                    width: '100vw',
-                  }}
-                  aria-hidden="true"
-                />
+              {/* Card 3: Fuel Bleed & Siphon Loss */}
+              <ScrollReveal delay={100}>
+                <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                    {/* Left: Authentic Analytics Chart Embed matching demo site */}
+                    <div className="lg:col-span-7">
+                      <LandingAnalyticsChart />
+                    </div>
 
-                <ScrollReveal delay={100} className="relative z-10">
-                  <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-[0_10px_35px_rgba(0,0,0,0.08)] hover:shadow-[0_16px_45px_rgba(0,0,0,0.12)] transition-all duration-200">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                      {/* Left: Authentic Analytics Chart Embed matching demo site */}
-                      <div className="lg:col-span-7">
-                        <LandingAnalyticsChart />
-                      </div>
+                    {/* Right: Text Description */}
+                    <div className="lg:col-span-5 flex flex-col justify-center">
+                      <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight leading-snug">
+                        The numbers don't lie — your receipts might
+                      </h3>
 
-                      {/* Right: Text Description */}
-                      <div className="lg:col-span-5 flex flex-col justify-center">
-                        <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight leading-snug">
-                          The numbers don't lie — your receipts might
-                        </h3>
+                      <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
+                        TripSync cross-checks pump receipts against live tank sensor readings. If your rig burned 38 liters more than it was dispatched with, that discrepancy shows up on your dashboard — with trip timestamps, route data, and a full audit trail attached.
+                      </p>
 
-                        <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
-                          TripSync cross-checks pump receipts against live tank sensor readings. If your rig burned 38 liters more than it was dispatched with, that discrepancy shows up on your dashboard — with trip timestamps, route data, and a full audit trail attached.
-                        </p>
-
-                        <div className="mt-6 flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-emerald-800">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                          <span>Fuel consumption &amp; mileage analytics — audit-ready, trip by trip</span>
-                        </div>
+                      <div className="mt-6 flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-emerald-800">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>Fuel consumption &amp; mileage analytics — audit-ready, trip by trip</span>
                       </div>
                     </div>
                   </div>
-                </ScrollReveal>
-              </div>
+                </div>
+              </ScrollReveal>
             </div>
           </div>
         </section>
@@ -628,7 +616,7 @@ export default function LandingPage() {
 
 
         {/* Section 4: Bottom Call To Action */}
-        <section className="py-20 sm:py-28 bg-[#fafbfc]">
+        <section className="py-20 sm:py-28 bg-[#fafbfc] border-t border-slate-200/80">
           <div className="max-w-5xl mx-auto px-6 sm:px-8">
             <div className="rounded-3xl border border-slate-200/80 bg-white p-10 sm:p-16 text-center shadow-[0_2px_16px_rgba(0,0,0,0.03)]">
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-[-0.03em]">
