@@ -18,6 +18,7 @@ export interface ActiveDriverLocation {
     stoppedForSeconds?: number;
     stoppedAt?: number;
     isOnline?: boolean;
+    offlineAt?: number;
 }
 
 export function useActiveDriversLocations() {

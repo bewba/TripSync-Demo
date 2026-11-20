@@ -49,6 +49,25 @@ export default function ActiveDriversPage() {
         return driver.stoppedForSeconds ?? 0;
     };
 
+    const formatLastSeen = (driver: any) => {
+        const lastTs =
+            driver.offlineAt && driver.offlineAt > 0
+                ? driver.offlineAt
+                : new Date(driver.lastUpdate).getTime();
+        const elapsedSec = Math.max(0, Math.floor((currentTime - lastTs) / 1000));
+        if (elapsedSec < 60) {
+            return `Last seen ${elapsedSec}s ago`;
+        }
+        const mins = Math.floor(elapsedSec / 60);
+        const secs = elapsedSec % 60;
+        if (mins < 60) {
+            return `Last seen ${mins}m ${secs}s ago`;
+        }
+        const hours = Math.floor(mins / 60);
+        const remMins = mins % 60;
+        return `Last seen ${hours}h ${remMins}m ${secs}s ago`;
+    };
+
     const onlineCount = drivers.filter(d => d.isOnline !== false).length;
 
     const filteredDrivers = drivers.filter(d => 
@@ -213,7 +232,7 @@ export default function ActiveDriversPage() {
                                                         {driver.origin} &rarr; {driver.destination}
                                                     </p>
                                                     <div className="flex items-center justify-between mt-1 pt-1 border-t border-slate-100/60 text-[10px] text-slate-400">
-                                                        <span>{driver.isOnline === false ? 'Last seen 4m ago' : `Updated ${new Date(driver.lastUpdate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}</span>
+                                                        <span>{driver.isOnline === false ? formatLastSeen(driver) : `Updated ${new Date(driver.lastUpdate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}</span>
                                                         <button 
                                                             onClick={(e) => {
                                                                 e.stopPropagation();

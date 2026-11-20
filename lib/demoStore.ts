@@ -31,6 +31,8 @@ interface ActiveSimulation {
   nextStopAt: number;
   /** Whether the driver is currently online / transmitting ping */
   isOnline: boolean;
+  /** Timestamp (ms) when the driver went offline. 0 = online. */
+  offlineAt: number;
   /** Timestamp (ms) until which this driver is offline */
   offlineUntil: number;
   /** Timestamp (ms) when the next offline period begins */
@@ -144,10 +146,16 @@ class DemoStore {
         stoppedAt: 0,
         // TRP-104 (Danilo Reyes) stops first after 5s so the demo effect is visible immediately
         nextStopAt: Date.now() + (trip.id === 'TRP-104' ? 5_000 : 0),
-        // TRP-105 (Arnel Mendoza) & TRP-106 (Mark Bautista) start offline
-        isOnline: trip.id !== 'TRP-105' && trip.id !== 'TRP-106',
-        offlineUntil: (trip.id === 'TRP-105' || trip.id === 'TRP-106') ? Date.now() + 120_000 : 0,
-        nextOfflineAt: (trip.id === 'TRP-105' || trip.id === 'TRP-106') ? 0 : (trip.id === 'TRP-103' ? Date.now() + 50_000 : 0),
+        // TRP-105 (Arnel Mendoza) & TRP-106 (Mark Bautista) start online for 5s, then go offline and stay offline
+        isOnline: true,
+        offlineAt: 0,
+        offlineUntil: 0,
+        nextOfflineAt:
+          trip.id === 'TRP-105' || trip.id === 'TRP-106'
+            ? Date.now() + 5_000
+            : trip.id === 'TRP-103'
+              ? Date.now() + 50_000
+              : 0,
       });
     });
 
@@ -186,16 +194,19 @@ class DemoStore {
       }
       // ───────────────────────────────────────────────────────────────────────
 
-      // ── Offline cycle (simulates intermittent GPS/connectivity dropout for TRP-105, TRP-106 & TRP-103) ──
+      // ── Offline cycle (TRP-105 & TRP-106 stay offline after 5s; TRP-103 has intermittent dropout) ──
       if (sim.tripId === 'TRP-105' || sim.tripId === 'TRP-106' || sim.tripId === 'TRP-103') {
+        const staysOffline = sim.tripId === 'TRP-105' || sim.tripId === 'TRP-106';
         if (sim.isOnline && sim.nextOfflineAt > 0 && now >= sim.nextOfflineAt) {
-          // Go offline for 30s
           sim.isOnline = false;
-          sim.offlineUntil = now + 30_000;
+          sim.offlineAt = now;
+          sim.offlineUntil = staysOffline ? 0 : now + 30_000;
+          sim.nextOfflineAt = 0;
           sim.speed = 0;
         } else if (!sim.isOnline && sim.offlineUntil > 0 && now >= sim.offlineUntil) {
-          // Reconnect online
+          // Reconnect online (only for intermittent drivers like TRP-103)
           sim.isOnline = true;
+          sim.offlineAt = 0;
           sim.offlineUntil = 0;
           sim.nextOfflineAt = now + 65_000 + Math.random() * 20_000;
           sim.speed = 65;
@@ -311,7 +322,9 @@ class DemoStore {
         driverName,
         lat: parseFloat(lat.toFixed(5)),
         lng: parseFloat(lng.toFixed(5)),
-        lastUpdate: isOnline ? new Date().toISOString() : new Date(Date.now() - 240_000).toISOString(),
+        lastUpdate: isOnline
+          ? new Date().toISOString()
+          : new Date(sim && sim.offlineAt > 0 ? sim.offlineAt : Date.now()).toISOString(),
         batteryLevel: battery,
         speed: isOnline ? (isStopped ? 0 : speed) : 0,
         heading,
@@ -323,6 +336,7 @@ class DemoStore {
         stoppedForSeconds,
         stoppedAt: isStopped && sim ? sim.stoppedAt : 0,
         isOnline,
+        offlineAt: !isOnline && sim ? sim.offlineAt : 0,
       };
     });
   }
@@ -419,6 +433,7 @@ class DemoStore {
       stoppedAt: 0,
       nextStopAt: 0, // newly created trips don't stop
       isOnline: true,
+      offlineAt: 0,
       offlineUntil: 0,
       nextOfflineAt: 0,
     });

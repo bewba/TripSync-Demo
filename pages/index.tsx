@@ -353,7 +353,7 @@ export default function LandingPage() {
                 transition={{ delay: 0.35, duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
                 className="lg:col-span-8 xl:col-span-9 2xl:col-span-9 w-full relative z-20"
               >
-                <div className="w-full shadow-[0_20px_60px_-10px_rgba(0,0,0,0.12)] rounded-2xl ring-1 ring-slate-200/80 overflow-hidden bg-white">
+                <div className="w-full shadow-[0_28px_70px_-12px_rgba(15,23,42,0.26),0_10px_24px_-6px_rgba(15,23,42,0.14)] rounded-2xl ring-1 ring-slate-300/80 overflow-hidden bg-white">
                   <LandingHeroMap />
                 </div>
               </motion.div>

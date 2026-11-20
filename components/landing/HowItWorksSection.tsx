@@ -186,10 +186,10 @@ export default function HowItWorksSection() {
               strokeDasharray="5 6"
               strokeOpacity="0.7"
             >
-              <path id="dom-arc-tl" d="M 184 162 C 232 162, 250 214, 286 254" />
-              <path id="dom-arc-bl" d="M 196 496 C 236 492, 254 440, 286 404" />
-              <path id="dom-arc-tr" d="M 1156 162 C 1108 162, 1090 214, 1054 254" />
-              <path id="dom-arc-br" d="M 1144 496 C 1104 492, 1086 440, 1054 404" />
+              <path id="dom-arc-tl" d="M 164 162 C 216 162, 246 212, 286 254" />
+              <path id="dom-arc-bl" d="M 178 496 C 224 492, 250 440, 286 404" />
+              <path id="dom-arc-tr" d="M 1176 162 C 1124 162, 1094 212, 1054 254" />
+              <path id="dom-arc-br" d="M 1162 496 C 1116 492, 1090 440, 1054 404" />
             </g>
 
             {/* Animated Live Telemetry Pulses */}
