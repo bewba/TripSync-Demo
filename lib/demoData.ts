@@ -573,7 +573,7 @@ export const INITIAL_ACTIVE_TRIPS: any[] = [
     request_info: {
       requestDate: new Date().toISOString().split('T')[0],
       requestTime: '06:00',
-      scheduledDeparture: '07:00 AM',
+      scheduledDeparture: new Date(Date.now() - 1000 * 60 * 95).toISOString(),
       travelPurpose: 'Bulk Container Distribution to Calabarzon Ports',
       requestedBy: 'Transport Operations Team',
       notes: 'Priority sea cargo dispatch. Handle with care.',
@@ -613,7 +613,7 @@ export const INITIAL_ACTIVE_TRIPS: any[] = [
     request_info: {
       requestDate: new Date().toISOString().split('T')[0],
       requestTime: '07:30',
-      scheduledDeparture: '08:00 AM',
+      scheduledDeparture: new Date(Date.now() - 1000 * 60 * 140).toISOString(),
       travelPurpose: 'Aviation Fuel Supply Transfer',
       requestedBy: 'Fuel Logistics Department',
       notes: 'Direct delivery to Subic Bay Aviation Depot via SCTEX.',
@@ -652,7 +652,7 @@ export const INITIAL_ACTIVE_TRIPS: any[] = [
     request_info: {
       requestDate: new Date().toISOString().split('T')[0],
       requestTime: '09:00',
-      scheduledDeparture: '09:30 AM',
+      scheduledDeparture: new Date(Date.now() - 1000 * 60 * 110).toISOString(),
       travelPurpose: 'Electronics Component Delivery to Cavite Export Zone',
       requestedBy: 'Global Semiconductor Logistics',
       notes: 'Temperature-controlled cargo. Maintain 22°C ambient.',
@@ -692,7 +692,7 @@ export const INITIAL_ACTIVE_TRIPS: any[] = [
     request_info: {
       requestDate: new Date().toISOString().split('T')[0],
       requestTime: '10:00',
-      scheduledDeparture: '10:30 AM',
+      scheduledDeparture: new Date(Date.now() - 1000 * 60 * 75).toISOString(),
       travelPurpose: 'Bulk Grains and Dry Food Transport to Manila Port',
       requestedBy: 'AgriLogistics Distribution',
       notes: 'Ensure tarpaulin cover is tightly fastened.',
@@ -732,7 +732,7 @@ export const INITIAL_ACTIVE_TRIPS: any[] = [
     request_info: {
       requestDate: new Date().toISOString().split('T')[0],
       requestTime: '05:00',
-      scheduledDeparture: '05:30 AM',
+      scheduledDeparture: new Date(Date.now() - 1000 * 60 * 185).toISOString(),
       travelPurpose: 'Highland FMCG Supermarket Distribution',
       requestedBy: 'National Retail Distribution Center',
       notes: 'Long haul. Regular rest stop at TPLEX Tarlac.',
@@ -772,7 +772,7 @@ export const INITIAL_ACTIVE_TRIPS: any[] = [
     request_info: {
       requestDate: new Date().toISOString().split('T')[0],
       requestTime: '08:30',
-      scheduledDeparture: '09:00 AM',
+      scheduledDeparture: new Date(Date.now() - 1000 * 60 * 125).toISOString(),
       travelPurpose: 'Pharmaceutical Supplies Distribution to Regional Depots',
       requestedBy: 'Healthcare Logistics PH',
       notes: 'Critical medical cargo. Secure temperature loggers.',
