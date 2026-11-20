@@ -196,8 +196,6 @@ export default function ActiveDriversPage() {
                                                 className={`w-full text-left p-3.5 rounded-2xl transition-all duration-200 ease-out flex items-start gap-3 cursor-pointer group border ${
                                                     isSelected 
                                                         ? 'bg-blue-50/70 border-blue-300 shadow-sm ring-1 ring-blue-400/80' 
-                                                        : driver.isGpsOff
-                                                        ? 'bg-white hover:bg-rose-50/30 border-rose-200/90 shadow-2xs'
                                                         : driver.isOnline === false
                                                         ? 'bg-slate-50/60 hover:bg-slate-100/60 border-slate-200/80'
                                                         : 'bg-white hover:bg-slate-50/70 border-slate-200/80 shadow-2xs'

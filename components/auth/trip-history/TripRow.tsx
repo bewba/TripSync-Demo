@@ -99,7 +99,7 @@ export const TripRow = ({ trip, onClick }: { trip: Trip; onClick?: () => void })
       </div>
 
       {/* DATE SECTION - Using 'when' instead of 'date' */}
-      <div className="text-left sm:text-right sm:ml-4 w-full sm:w-auto flex flex-col gap-1.5">
+      <div className="text-left sm:text-right sm:ml-4 w-full sm:w-44 shrink-0 flex flex-col gap-1.5">
         <div className="text-left sm:text-right">
           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Requested</span>
           <span className="text-xs font-semibold text-slate-600 block">
