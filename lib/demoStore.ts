@@ -146,16 +146,18 @@ class DemoStore {
         stoppedAt: 0,
         // TRP-104 (Danilo Reyes) stops first after 5s so the demo effect is visible immediately
         nextStopAt: Date.now() + (trip.id === 'TRP-104' ? 5_000 : 0),
-        // TRP-105 (Arnel Mendoza) & TRP-106 (Mark Bautista) start online for 5s, then go offline and stay offline
+        // TRP-105 (Arnel Mendoza) goes offline after 5s & TRP-106 (Mark Bautista) after 12s, then both stay offline
         isOnline: true,
         offlineAt: 0,
         offlineUntil: 0,
         nextOfflineAt:
-          trip.id === 'TRP-105' || trip.id === 'TRP-106'
+          trip.id === 'TRP-105'
             ? Date.now() + 5_000
-            : trip.id === 'TRP-103'
-              ? Date.now() + 50_000
-              : 0,
+            : trip.id === 'TRP-106'
+              ? Date.now() + 12_000
+              : trip.id === 'TRP-103'
+                ? Date.now() + 50_000
+                : 0,
       });
     });
 
