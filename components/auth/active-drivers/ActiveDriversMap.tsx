@@ -196,11 +196,14 @@ export default function ActiveDriversMap({
                             display: flex; align-items: center; justify-content: center;
                             cursor: pointer;
                         ">
-                            <svg width="${size * 0.52}" height="${size * 0.52}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg width="${size * 0.52}" height="${size * 0.52}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="2" y1="2" x2="22" y2="22"/>
-                                <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74"/>
-                                <path d="M8.5 16.5C6.4 14.3 5 11.7 5 9a7 7 0 0 1 .47-2.53"/>
-                                <circle cx="12" cy="9" r="2.5"/>
+                                <path d="M8.5 16.5a5 5 0 0 1 7 0"/>
+                                <path d="M2 8.82a15 15 0 0 1 4.17-2.65"/>
+                                <path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"/>
+                                <path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"/>
+                                <path d="M5 13a10 10 0 0 1 5.24-2.76"/>
+                                <line x1="12" y1="20" x2="12.01" y2="20"/>
                             </svg>
                         </div>
                     </div>

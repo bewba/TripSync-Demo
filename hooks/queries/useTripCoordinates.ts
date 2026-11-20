@@ -60,7 +60,7 @@ export function useTripCoordinates(
     queryKey: queryKeys.tripCoordinates(tripId ?? ''),
     enabled: isEnabled,
     refetchInterval: pollMs === false ? false : pollMs,
-    staleTime: 150000,
+    staleTime: pollMs === false ? 150000 : 0,
 
     // 2. CRITICAL: Turn off structural sharing. 
     // You are already manually merging legs with `mergeLegs()`. 

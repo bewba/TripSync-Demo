@@ -269,6 +269,7 @@ interface MapRendererProps {
     hoveredFlagId?: string | null;
     focusFlag?: { id: string; key: number } | null;
     onFlagHover?: (id: string | null) => void;
+    isLive?: boolean;
 }
 
 function MapRenderer({
@@ -286,6 +287,7 @@ function MapRenderer({
     hoveredFlagId,
     focusFlag,
     onFlagHover,
+    isLive = false,
 }: MapRendererProps) {
     const [isMapReady, setIsMapReady] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -721,22 +723,29 @@ function MapRenderer({
                     `);
                 }
 
-                // ── End marker ───────────────────────────────────────────
+                // ── End / Live Current Location marker ──────────────────
                 const endPoint = lastCoord ?? tripEndPoint;
                 if (endPoint) {
-                    const endIcon = L.divIcon({
-                        className: '',
-                        html: `<div style="width:12px;height:12px;border-radius:50%;background:#ef4444;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>`,
-                        iconSize: [12, 12],
-                        iconAnchor: [6, 6],
-                    });
-                    const marker = L.marker([endPoint.lat, endPoint.lng], { icon: endIcon }).addTo(group);
+                    const endIcon = isLive
+                        ? L.divIcon({
+                              className: '',
+                              html: `<div style="width:16px;height:16px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 0 4px rgba(59,130,246,0.28),0 2px 6px rgba(0,0,0,0.35)"></div>`,
+                              iconSize: [16, 16],
+                              iconAnchor: [8, 8],
+                          })
+                        : L.divIcon({
+                              className: '',
+                              html: `<div style="width:12px;height:12px;border-radius:50%;background:#ef4444;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>`,
+                              iconSize: [12, 12],
+                              iconAnchor: [6, 6],
+                          });
+                    const marker = L.marker([endPoint.lat, endPoint.lng], { icon: endIcon, zIndexOffset: isLive ? 500 : 0 }).addTo(group);
 
                     const streetViewUrl = `https://www.google.com/maps?q=${endPoint.lat},${endPoint.lng}&layer=c&cbll=${endPoint.lat},${endPoint.lng}`;
                     marker.bindPopup(`
                         <div style="font-family: inherit; padding: 4px; min-width: 140px">
-                            <p style="margin: 0 0 8px 0; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #94a3b8">End Point</p>
-                            <a href="${streetViewUrl}" target="_blank" style="display: block; background: #ef4444; color: white; text-align: center; padding: 8px 12px; border-radius: 8px; text-decoration: none; font-size: 11px; font-weight: 700;">
+                            <p style="margin: 0 0 8px 0; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #94a3b8">${isLive ? 'Current Location' : 'End Point'}</p>
+                            <a href="${streetViewUrl}" target="_blank" style="display: block; background: ${isLive ? '#3b82f6' : '#ef4444'}; color: white; text-align: center; padding: 8px 12px; border-radius: 8px; text-decoration: none; font-size: 11px; font-weight: 700;">
                                 Street View
                             </a>
                         </div>
@@ -760,7 +769,7 @@ function MapRenderer({
                 onRenderErrorRef.current?.();
             }
         })();
-    }, [isMapReady, actualCoords, tripStartPoint, tripEndPoint, fitKey, segments]);
+    }, [isMapReady, actualCoords, tripStartPoint, tripEndPoint, fitKey, segments, isLive]);
 
     // ── Flag markers: render driver_flags as custom Leaflet markers ───────────
     useEffect(() => {
@@ -1321,7 +1330,7 @@ export function TripMapModal({
     // pure waste (and the empty `since` query can be slow).
     const coordsQuery = useTripCoordinates(isOpen ? tripId : null, {
         enabled: isOpen && !!tripId,
-        pollMs: isLive && hasRendered ? 15000 : false,
+        pollMs: isLive && hasRendered ? 2500 : false,
     });
     const legs = coordsQuery.data?.legs ?? [];
     const isLoadingCoords = coordsQuery.isLoading;
@@ -1373,10 +1382,14 @@ export function TripMapModal({
     }, [isOpen, initialLeg, legs]);
 
     const currentLegCoords = legs[activeLeg]?.coordinates ?? [];
+    const lastLegCoord = currentLegCoords[currentLegCoords.length - 1];
+    const coordsVersionKey = lastLegCoord
+        ? `${currentLegCoords.length}:${lastLegCoord.lat}:${lastLegCoord.lng}:${lastLegCoord.createdAt ?? ''}:${lastLegCoord.batteryLevel ?? ''}`
+        : '0';
     const isLargeRoute = currentLegCoords.length > MAX_POINTS_WITH_SEGMENTS;
     const renderCoords = useMemo(
         () => downsampleCoordinates(currentLegCoords, MAX_RENDER_POINTS),
-        [currentLegCoords.length] // 💡 Bind to length instead of the array reference itself
+        [coordsVersionKey]
     );
     const isLoading = isLoadingCoords || isLoadingMap;
 
@@ -1389,7 +1402,7 @@ export function TripMapModal({
             }
         }
         return null;
-    }, [legs.length]);
+    }, [legs.length, coordsVersionKey]);
 
     // currentBattery: last non-null reading in the active leg (most recent)
     const currentBattery = useMemo(() => {
@@ -1398,13 +1411,13 @@ export function TripMapModal({
             if (b != null) return b;
         }
         return null;
-    }, [currentLegCoords.length]);
+    }, [coordsVersionKey]);
 
     // ── Compute segments from coordinates ────────────────────────────────────
     const segments = useMemo(() => {
         if (!renderCoords.length || !renderCoords[0]?.createdAt) return [];
         return generateSegments(renderCoords);
-    }, [renderCoords.length]); // 💡 Bind to length or a primitive property
+    }, [renderCoords, coordsVersionKey]);
 
     const hasSegments = segments.length > 0;
 
@@ -1560,6 +1573,7 @@ export function TripMapModal({
                                             hoveredFlagId={hoveredFlagId}
                                             focusFlag={focusFlag}
                                             onFlagHover={handleFlagHover}
+                                            isLive={isLive}
                                         />
                                     )}
 
@@ -1646,8 +1660,8 @@ export function TripMapModal({
                                         <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Start</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <div className="w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow" />
-                                        <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">End</span>
+                                        <div className={`w-3 h-3 rounded-full border-2 border-white shadow ${isLive ? 'bg-blue-500' : 'bg-red-500'}`} />
+                                        <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">{isLive ? 'Current' : 'End'}</span>
                                     </div>
                                     {flags.some((f) => f.code === 0) && (
                                         <div className="flex items-center gap-1.5">

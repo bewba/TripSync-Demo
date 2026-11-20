@@ -81,7 +81,9 @@ export default function ActiveDriversPage() {
     };
 
     const onlineCount = drivers.filter(d => d.isOnline !== false).length;
-    const gpsOffCount = drivers.filter(d => !!d.isGpsOff).length;
+    const gpsOffCount = drivers.filter(d => d.isOnline !== false && !!d.isGpsOff).length;
+    const stoppedCount = drivers.filter(d => d.isOnline !== false && !d.isGpsOff && !!d.isStopped).length;
+    const offlineCount = drivers.filter(d => d.isOnline === false).length;
 
     const filteredDrivers = drivers.filter(d => 
         d.driverName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -117,6 +119,18 @@ export default function ActiveDriversPage() {
                                 <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-0.5 rounded-full text-xs font-bold">
                                     <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse"></span>
                                     {gpsOffCount} GPS Off
+                                </span>
+                            )}
+                            {stoppedCount > 0 && (
+                                <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-600 border border-red-200 px-2.5 py-0.5 rounded-full text-xs font-bold">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                    {stoppedCount} Stopped
+                                </span>
+                            )}
+                            {offlineCount > 0 && (
+                                <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 border border-slate-200 px-2.5 py-0.5 rounded-full text-xs font-bold">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                                    {offlineCount} Offline
                                 </span>
                             )}
                         </div>

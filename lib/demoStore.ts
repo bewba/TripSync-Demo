@@ -673,9 +673,48 @@ class DemoStore {
     return { data: formatted, count: total };
   }
 
+  public isTripLive(tripId: string): boolean {
+    return this.simulations.has(tripId);
+  }
+
+  private getTraveledWaypoints(sim: ActiveSimulation): [number, number][] {
+    const { route, currentSegmentIndex, segmentProgress } = sim;
+    if (route.length === 0) return [];
+    if (route.length === 1) return [route[0]];
+
+    const clampedIdx = Math.max(0, Math.min(currentSegmentIndex, route.length - 1));
+    const traveled = route.slice(0, clampedIdx + 1);
+    const p1 = route[clampedIdx];
+    const p2 = route[clampedIdx + 1] || p1;
+    const currentLat = parseFloat((p1[0] + (p2[0] - p1[0]) * segmentProgress).toFixed(5));
+    const currentLng = parseFloat((p1[1] + (p2[1] - p1[1]) * segmentProgress).toFixed(5));
+
+    const last = traveled[traveled.length - 1];
+    if (!last || last[0] !== currentLat || last[1] !== currentLng) {
+      traveled.push([currentLat, currentLng]);
+    }
+    return traveled;
+  }
+
+  private computePathDistanceKm(points: [number, number][]): number {
+    let total = 0;
+    for (let i = 1; i < points.length; i++) {
+      total += haversineDistance(points[i - 1][0], points[i - 1][1], points[i][0], points[i][1]);
+    }
+    return parseFloat(total.toFixed(1));
+  }
+
   public getTripDetail(tripId: string) {
     const trip = this.trips.find((t) => t.id === tripId);
     if (!trip) return null;
+
+    const sim = this.simulations.get(tripId);
+    let distanceTravelled = trip.distance_travelled || [trip.fuel_requirement?.distance || 100];
+    if (sim) {
+      this.tick();
+      const traveled = this.getTraveledWaypoints(sim);
+      distanceTravelled = [this.computePathDistanceKm(traveled)];
+    }
 
     return {
       id: trip.id,
@@ -687,7 +726,7 @@ class DemoStore {
       tripStart: trip.trip_start || ['08:00 AM'],
       tripEnd: trip.trip_end || ['10:30 AM'],
       estDistanceRequired: trip.location_info?.estDistanceRequired || [trip.fuel_requirement?.distance || 100],
-      distanceTravelled: trip.distance_travelled || [trip.fuel_requirement?.distance || 100],
+      distanceTravelled,
       actualTripTime: trip.actual_trip_time || ['2h 15m'],
       estimatedTripTime: trip.estimated_trip_time || ['2h 00m'],
       useToll: trip.use_toll ?? true,
@@ -710,9 +749,58 @@ class DemoStore {
     if (!trip) return [];
 
     const sim = this.simulations.get(tripId);
+    if (sim) {
+      this.tick();
+      const traveled = this.getTraveledWaypoints(sim);
+      if (traveled.length === 0) return [];
+
+      // Cumulative distance along traveled points for realistic timestamp distribution
+      const cumDist: number[] = [0];
+      for (let i = 1; i < traveled.length; i++) {
+        cumDist.push(
+          cumDist[i - 1] +
+            haversineDistance(traveled[i - 1][0], traveled[i - 1][1], traveled[i][0], traveled[i][1])
+        );
+      }
+      const totalDist = cumDist[cumDist.length - 1];
+
+      const endMs = sim.isOnline ? Date.now() : (sim.offlineAt > 0 ? sim.offlineAt : Date.now());
+      const parsedStart = trip.request_info?.scheduledDeparture
+        ? new Date(trip.request_info.scheduledDeparture).getTime()
+        : NaN;
+      const startMs =
+        !isNaN(parsedStart) && parsedStart < endMs
+          ? parsedStart
+          : endMs - Math.max(10 * 60_000, Math.round((totalDist / 60) * 3_600_000));
+
+      const currentBattery = Math.round(sim.batteryLevel);
+      const startBattery = Math.min(100, currentBattery + Math.max(4, Math.round(totalDist * 0.15)));
+
+      return [
+        {
+          leg: 1,
+          coordinates: traveled.map((pt, idx) => {
+            const ratio =
+              totalDist > 0
+                ? cumDist[idx] / totalDist
+                : traveled.length > 1
+                  ? idx / (traveled.length - 1)
+                  : 1;
+            const ts = Math.round(startMs + (endMs - startMs) * ratio);
+            const battery = Math.round(startBattery - (startBattery - currentBattery) * ratio);
+            return {
+              lat: pt[0],
+              lng: pt[1],
+              batteryLevel: battery,
+              createdAt: new Date(ts).toISOString(),
+            };
+          }),
+        },
+      ];
+    }
+
     const routeKey = trip.route_key;
     const waypoints =
-      sim?.route ||
       PRECONFIGURED_ROUTES[tripId] ||
       (routeKey && PRECONFIGURED_ROUTES[routeKey]) ||
       generateInterpolatedWaypoints(
