@@ -11,7 +11,7 @@ interface ActiveDriversMapProps {
     drivers: ActiveDriverLocation[];
     hoveredDriverId: string | null;
     selectedDriverId?: string | null;
-    onSelectDriver?: (tripId: string) => void;
+    onSelectDriver?: (tripId: string | null) => void;
     onViewTripDetails?: (tripId: string) => void;
 }
 
@@ -32,6 +32,7 @@ export default function ActiveDriversMap({
     const lastIconStateRef = useRef<Map<string, string>>(new Map());
     const hasFittedInitialBoundsRef = useRef(false);
     const lastFocusedDriverRef = useRef<string | null>(null);
+    const hoveredMarkerIdRef = useRef<string | null>(null);
 
     const [isMapReady, setIsMapReady] = useState(false);
     const [clockTick, setClockTick] = useState(0);
@@ -91,12 +92,17 @@ export default function ActiveDriversMap({
     // Manual Re-center / Fit All Fleet Bounds
     const handleFitAllFleet = useCallback(() => {
         if (!mapRef.current || drivers.length === 0) return;
+        hoveredMarkerIdRef.current = null;
+        markersRef.current.forEach((marker) => {
+            marker.closeTooltip();
+        });
+        onSelectDriver?.(null);
         import('leaflet').then((LModule) => {
             const L = LModule.default;
             const bounds = L.latLngBounds(drivers.map((d) => [d.lat, d.lng] as [number, number]));
             mapRef.current.fitBounds(bounds, { padding: [60, 60], maxZoom: 14, animate: true, duration: 0.6 });
         });
-    }, [drivers]);
+    }, [drivers, onSelectDriver]);
 
     // Render & Update Markers — snap to new position every 10 meters
     useEffect(() => {
@@ -137,20 +143,69 @@ export default function ActiveDriversMap({
 
             drivers.forEach((driver) => {
                 const isHovered = driver.tripId === hoveredDriverId || driver.tripId === selectedDriverId;
+                const isGpsOff = !!driver.isGpsOff;
                 const isStopped = !!driver.isStopped;
                 const isOffline = driver.isOnline === false;
                 const stoppedDuration = isStopped && driver.stoppedAt
                     ? Math.max(0, Math.floor((Date.now() - driver.stoppedAt) / 1000))
                     : (driver.stoppedForSeconds ?? 0);
+                const gpsOffSeconds = isGpsOff && driver.gpsOffAt
+                    ? Math.max(0, Math.floor((Date.now() - driver.gpsOffAt) / 1000))
+                    : 0;
+                const gpsOffLabel = `${String(Math.floor(gpsOffSeconds / 60)).padStart(2, '0')}:${String(gpsOffSeconds % 60).padStart(2, '0')}`;
                 const size = isHovered ? 40 : 28;
-                const zIndex = isHovered ? 1000 : isOffline ? 40 : isStopped ? 500 : 100;
+                const zIndex = isHovered ? 1000 : isGpsOff ? 600 : isOffline ? 40 : isStopped ? 500 : 100;
 
-                // Color: gray if offline, red if stopped, blue if hovered/selected, green otherwise
-                const bgColor = isOffline ? '#64748b' : isStopped ? '#ef4444' : isHovered ? '#3b82f6' : '#22c55e';
+                // Color: rose/red if GPS off, gray if offline, red if stopped, blue if hovered/selected, green otherwise
+                const bgColor = isGpsOff ? '#e11d48' : isOffline ? '#64748b' : isStopped ? '#ef4444' : isHovered ? '#3b82f6' : '#22c55e';
 
-                const iconStateKey = `${isStopped ? 'stopped' : isOffline ? 'offline' : 'active'}_${isHovered ? 'hover' : 'idle'}_${size}`;
+                const iconStateKey = isGpsOff
+                    ? `gpsoff_${gpsOffLabel}_${isHovered ? 'hover' : 'idle'}_${size}`
+                    : `${isStopped ? 'stopped' : isOffline ? 'offline' : 'active'}_${isHovered ? 'hover' : 'idle'}_${size}`;
 
-                const iconHtml = `
+                const iconHtml = isGpsOff
+                    ? `
+                    <div style="display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); position: relative; left: 50%; top: 100%;">
+                        <div style="
+                            display: inline-flex; align-items: center; gap: 4px;
+                            background: #ffffff; color: #e11d48;
+                            border: 1.5px solid #fda4af;
+                            border-radius: 9999px;
+                            padding: 2px 8px;
+                            font-family: Inter, system-ui, sans-serif;
+                            font-size: 10px; font-weight: 800;
+                            white-space: nowrap;
+                            box-shadow: 0 3px 10px rgba(225,29,72,0.18);
+                            margin-bottom: 4px;
+                        ">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="2" y1="2" x2="22" y2="22"/>
+                                <path d="M8.5 16.5a5 5 0 0 1 7 0"/>
+                                <path d="M5 12.55a11 11 0 0 1 5.17-2.39"/>
+                                <path d="M10.71 5.05A16 16 0 0 1 22.58 9"/>
+                            </svg>
+                            <span>GPS OFF</span>
+                            <span style="font-variant-numeric: tabular-nums;">${gpsOffLabel}</span>
+                        </div>
+                        <div style="
+                            width: ${size}px; height: ${size}px;
+                            background: ${bgColor};
+                            border: 3px solid white;
+                            border-radius: 50%;
+                            box-shadow: 0 4px 12px rgba(225,29,72,0.35);
+                            display: flex; align-items: center; justify-content: center;
+                            cursor: pointer;
+                        ">
+                            <svg width="${size * 0.52}" height="${size * 0.52}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="2" y1="2" x2="22" y2="22"/>
+                                <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74"/>
+                                <path d="M8.5 16.5C6.4 14.3 5 11.7 5 9a7 7 0 0 1 .47-2.53"/>
+                                <circle cx="12" cy="9" r="2.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                `
+                    : `
                     <div style="
                         width: ${size}px; height: ${size}px; 
                         background: ${bgColor}; 
@@ -180,7 +235,18 @@ export default function ActiveDriversMap({
                         <div style="font-weight: 800; font-size: 13px; color: #1e293b; margin-bottom: 2px;">
                             ${driver.driverName}
                         </div>
-                        ${isOffline ? `
+                        ${isGpsOff ? `
+                            <div style="
+                                display: inline-flex; align-items: center; gap: 4px;
+                                background: #fff1f2; color: #e11d48;
+                                font-size: 10px; font-weight: 700;
+                                padding: 2px 6px; border-radius: 4px;
+                                margin-bottom: 4px;
+                                border: 1px solid #fda4af;
+                            ">
+                                ● GPS TURNED OFF (${gpsOffLabel})
+                            </div>
+                        ` : isOffline ? `
                             <div style="
                                 display: inline-flex; align-items: center; gap: 4px;
                                 background: #f1f5f9; color: #475569;
@@ -238,6 +304,16 @@ export default function ActiveDriversMap({
                         onSelectDriver?.(driver.tripId);
                     });
 
+                    marker.on('mouseover', () => {
+                        hoveredMarkerIdRef.current = driver.tripId;
+                    });
+
+                    marker.on('mouseout', () => {
+                        if (hoveredMarkerIdRef.current === driver.tripId) {
+                            hoveredMarkerIdRef.current = null;
+                        }
+                    });
+
                     markersRef.current.set(driver.tripId, marker);
                     lastPlacedRef.current.set(driver.tripId, { lat: driver.lat, lng: driver.lng });
                     lastIconStateRef.current.set(driver.tripId, iconStateKey);
@@ -276,6 +352,8 @@ export default function ActiveDriversMap({
 
                 if (isHovered) {
                     marker.openTooltip();
+                } else if (hoveredMarkerIdRef.current !== driver.tripId) {
+                    marker.closeTooltip();
                 }
             });
 

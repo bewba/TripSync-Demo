@@ -37,6 +37,10 @@ interface ActiveSimulation {
   offlineUntil: number;
   /** Timestamp (ms) when the next offline period begins */
   nextOfflineAt: number;
+  /** Whether the driver has turned off GPS / location services while app is online */
+  isGpsOff: boolean;
+  /** Timestamp (ms) when GPS was turned off. 0 = GPS active. */
+  gpsOffAt: number;
 }
 
 // Calculate bearing in degrees from point A to point B
@@ -138,8 +142,8 @@ class DemoStore {
         route,
         currentSegmentIndex: initialSeg,
         segmentProgress: initialProg,
-        speed: 62 + (idx * 4),
-        batteryLevel: Math.max(45, 95 - idx * 10),
+        speed: trip.id === 'TRP-103' ? 0 : 62 + (idx * 4),
+        batteryLevel: trip.id === 'TRP-103' ? 22 : Math.max(45, 95 - idx * 10),
         heading,
         forward: true,
         stoppedUntil: 0,
@@ -155,9 +159,10 @@ class DemoStore {
             ? Date.now() + 5_000
             : trip.id === 'TRP-106'
               ? Date.now() + 12_000
-              : trip.id === 'TRP-103'
-                ? Date.now() + 50_000
-                : 0,
+              : 0,
+        // TRP-103 (Eduardo Ramos) demonstrates live GPS Turned Off detection
+        isGpsOff: trip.id === 'TRP-103',
+        gpsOffAt: trip.id === 'TRP-103' ? Date.now() - 9_000 : 0,
       });
     });
 
@@ -220,6 +225,12 @@ class DemoStore {
         }
       }
       // ───────────────────────────────────────────────────────────────────────
+
+      // GPS Turned Off — app stays online but no GPS coordinates advance
+      if (sim.isGpsOff) {
+        sim.speed = 0;
+        return;
+      }
 
       // Realistic speed variation (55-85 km/h)
       const speedJitter = (Math.random() - 0.5) * 4;
@@ -304,6 +315,7 @@ class DemoStore {
       }
 
       const isOnline = sim ? sim.isOnline : true;
+      const isGpsOff = !!(sim && sim.isGpsOff);
       const isStopped = !!(sim && sim.stoppedUntil > 0);
       const stoppedForSeconds = isStopped && sim && sim.stoppedAt > 0
         ? Math.max(0, Math.floor((Date.now() - sim.stoppedAt) / 1000))
@@ -328,7 +340,7 @@ class DemoStore {
           ? new Date().toISOString()
           : new Date(sim && sim.offlineAt > 0 ? sim.offlineAt : Date.now()).toISOString(),
         batteryLevel: battery,
-        speed: isOnline ? (isStopped ? 0 : speed) : 0,
+        speed: isOnline && !isGpsOff ? (isStopped ? 0 : speed) : 0,
         heading,
         truckName,
         plateNumber,
@@ -339,6 +351,8 @@ class DemoStore {
         stoppedAt: isStopped && sim ? sim.stoppedAt : 0,
         isOnline,
         offlineAt: !isOnline && sim ? sim.offlineAt : 0,
+        isGpsOff,
+        gpsOffAt: isGpsOff && sim ? sim.gpsOffAt : 0,
       };
     });
   }
@@ -438,6 +452,8 @@ class DemoStore {
       offlineAt: 0,
       offlineUntil: 0,
       nextOfflineAt: 0,
+      isGpsOff: false,
+      gpsOffAt: 0,
     });
 
     // Add audit log

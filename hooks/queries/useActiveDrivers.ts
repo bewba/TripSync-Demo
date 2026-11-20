@@ -19,6 +19,8 @@ export interface ActiveDriverLocation {
     stoppedAt?: number;
     isOnline?: boolean;
     offlineAt?: number;
+    isGpsOff?: boolean;
+    gpsOffAt?: number;
 }
 
 export function useActiveDriversLocations() {
