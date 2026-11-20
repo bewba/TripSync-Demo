@@ -775,16 +775,50 @@ class DemoStore {
 
       const currentBattery = Math.round(sim.batteryLevel);
       const startBattery = Math.min(100, currentBattery + Math.max(4, Math.round(totalDist * 0.15)));
+      const totalDurationSec = Math.max(1, (endMs - startMs) / 1000);
+
+      // Densify sparse route waypoints into realistic ~25-35s GPS pings so
+      // TripMapModal renders a continuous route line without false GPS-loss gaps.
+      const targetPingSec = Math.max(25, Math.ceil(totalDurationSec / 350));
+      const densePoints: [number, number][] = [traveled[0]];
+      for (let i = 1; i < traveled.length; i++) {
+        const prev = traveled[i - 1];
+        const curr = traveled[i];
+        const segDist = cumDist[i] - cumDist[i - 1];
+        const segDurationSec = totalDist > 0 ? totalDurationSec * (segDist / totalDist) : 0;
+        const steps = Math.max(1, Math.ceil(segDurationSec / targetPingSec));
+        for (let s = 1; s <= steps; s++) {
+          const t = s / steps;
+          densePoints.push([
+            parseFloat((prev[0] + (curr[0] - prev[0]) * t).toFixed(5)),
+            parseFloat((prev[1] + (curr[1] - prev[1]) * t).toFixed(5)),
+          ]);
+        }
+      }
+
+      const denseCumDist: number[] = [0];
+      for (let i = 1; i < densePoints.length; i++) {
+        denseCumDist.push(
+          denseCumDist[i - 1] +
+            haversineDistance(
+              densePoints[i - 1][0],
+              densePoints[i - 1][1],
+              densePoints[i][0],
+              densePoints[i][1]
+            )
+        );
+      }
+      const denseTotalDist = denseCumDist[denseCumDist.length - 1];
 
       return [
         {
           leg: 1,
-          coordinates: traveled.map((pt, idx) => {
+          coordinates: densePoints.map((pt, idx) => {
             const ratio =
-              totalDist > 0
-                ? cumDist[idx] / totalDist
-                : traveled.length > 1
-                  ? idx / (traveled.length - 1)
+              denseTotalDist > 0
+                ? denseCumDist[idx] / denseTotalDist
+                : densePoints.length > 1
+                  ? idx / (densePoints.length - 1)
                   : 1;
             const ts = Math.round(startMs + (endMs - startMs) * ratio);
             const battery = Math.round(startBattery - (startBattery - currentBattery) * ratio);
